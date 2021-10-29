@@ -2,8 +2,8 @@
 
 import numpy as np
 
-NUM_ROWS = 11
-NUM_COLS = 11
+NUM_ROWS = 3
+NUM_COLS = 3
 INF = 1e9
 
 X = [1, 0, -1, 0]

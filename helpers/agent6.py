@@ -58,12 +58,15 @@ def generate_grid_manually():
     """
     array = np.zeros((NUM_ROWS, NUM_COLS))
 
-    array[1][0] = 1
-    array[1][2] = 1
-    array[1][3] = 1
-    array[2][3] = 1
-    array[3][3] = 1
-    array[3][4] = 1
+    array[0][0] = 3
+    array[0][1] = 1
+    array[0][2] = 1
+    array[1][0] = 2
+    array[1][1] = 2
+    array[1][2] = 3
+    array[2][0] = 3
+    array[2][1] = 4
+    array[2][2] = 4
     return array
 
 
@@ -87,11 +90,10 @@ def generate_grid_with_probability_p(p):
     return randomly_generated_array
 
 
-def random_target():
+def set_random_target():
     
-    from constants import NUM_COLS, NUM_ROWS
-    x_pos = random.randint(0,NUM_ROWS)
-    y_pos = random.randint(0,NUM_COLS)
+    x_pos = random.randint(0,NUM_ROWS-1)
+    y_pos = random.randint(0,NUM_COLS-1)
     return (x_pos,y_pos)
 
 
@@ -128,7 +130,7 @@ def parent_to_child_dict(parent: dict, starting_position: tuple):
 
 
 
-def astar_search(maze: list, start_pos: tuple):
+def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
     """
     Function to compute A* search
     :param maze: maze is a list of list
@@ -146,6 +148,9 @@ def astar_search(maze: list, start_pos: tuple):
     # the value of a node when we want to remove a particular node from the sorted set
     node_to_random_number_mapping = dict()
 
+
+    GOAL_POSITION_OF_AGENT = goal_pos
+    
     # Initialize another dictionary to store parent information
     parents = dict()
 
@@ -160,9 +165,8 @@ def astar_search(maze: list, start_pos: tuple):
     # Add start position node into the sorted set. We are giving priority to f(n), h(n), and g(n) in the decreasing
     # order. Push random number for random selection if there is conflict between two nodes
     # (If f(n), g(n), and h(n) are same for two nodes)
-    sorted_set.add(((maze[start_pos[0]][start_pos[1]].f, maze[start_pos[0]][start_pos[1]].probability_of_being_blocked,
-                     maze[start_pos[0]][start_pos[1]].h, maze[start_pos[0]][start_pos[1]].g,
-                     node_to_random_number_mapping[start_pos]), start_pos))
+    sorted_set.add(((maze[start_pos[0]][start_pos[1]].f, maze[start_pos[0]][start_pos[1]].h, 
+                     maze[start_pos[0]][start_pos[1]].g, node_to_random_number_mapping[start_pos]), start_pos))
 
     parents[start_pos] = start_pos
 
@@ -198,7 +202,6 @@ def astar_search(maze: list, start_pos: tuple):
                     node_to_random_number_mapping[neighbour] = random.uniform(0, 1)
                     visited_nodes.add(neighbour)
                     sorted_set.add(((maze[neighbour[0]][neighbour[1]].f,
-                                     maze[neighbour[0]][neighbour[1]].probability_of_being_blocked,
                                      maze[neighbour[0]][neighbour[1]].h, maze[neighbour[0]][neighbour[1]].g,
                                      node_to_random_number_mapping[neighbour]), neighbour))
                     parents[neighbour] = current_node[1]
@@ -215,13 +218,11 @@ def astar_search(maze: list, start_pos: tuple):
                         # neighbour has to be in the sorted set if we are able to find out less value of f(n) for that
                         # particular neighbour
                         if ((maze[neighbour[0]][neighbour[1]].f,
-                             maze[neighbour[0]][neighbour[1]].probability_of_being_blocked,
                              maze[neighbour[0]][neighbour[1]].h, maze[neighbour[0]][neighbour[1]].g,
                              node_to_random_number_mapping[neighbour]), neighbour) \
                                 in sorted_set:
                             sorted_set.remove(
                                 ((maze[neighbour[0]][neighbour[1]].f,
-                                  maze[neighbour[0]][neighbour[1]].probability_of_being_blocked,
                                   maze[neighbour[0]][neighbour[1]].h, maze[neighbour[0]][neighbour[1]].g,
                                   node_to_random_number_mapping[neighbour]), neighbour))
                         maze[neighbour[0]][neighbour[1]].g = neighbour_g
@@ -229,7 +230,6 @@ def astar_search(maze: list, start_pos: tuple):
                         node_to_random_number_mapping[neighbour] = random.uniform(0, 1)
                         sorted_set.add(
                             ((maze[neighbour[0]][neighbour[1]].f,
-                              maze[neighbour[0]][neighbour[1]].probability_of_being_blocked,
                               maze[neighbour[0]][neighbour[1]].h, maze[neighbour[0]][neighbour[1]].g,
                               node_to_random_number_mapping[neighbour]), neighbour))
                         parents[neighbour] = current_node[1]
@@ -237,7 +237,7 @@ def astar_search(maze: list, start_pos: tuple):
     return parents, num_explored_nodes
 
 
-def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, parents: dict,
+def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_pos: tuple, parents: dict,
                       want_to_explore_field_of_view: bool, is_backtrack_strategy_on: bool = False):
     """
     This is the repeated forward function which can be used with any algorithm (astar or bfs). This function will
@@ -253,9 +253,9 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, parent
     """
 
     num_backtracks = 0
-
+    GOAL_POSITION_OF_AGENT = goal_pos
     children = parent_to_child_dict(parents, GOAL_POSITION_OF_AGENT)
-
+    print(children)
     # Setting current position to starting position so we can start iterating from start_pos
     cur_pos = start_pos
 
@@ -274,6 +274,12 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, parent
 
         if maze_array[cur_pos[0]][cur_pos[1]] == 1:
             maze[cur_pos[0]][cur_pos[1]].is_blocked = True
+        elif maze_array[cur_pos[0]][cur_pos[1]] == 2:
+            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = 0.2
+        elif maze_array[cur_pos[0]][cur_pos[1]] == 3:
+            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = 0.5
+        elif maze_array[cur_pos[0]][cur_pos[1]] == 4:
+            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = 0.8
         else:
             maze[cur_pos[0]][cur_pos[1]].is_blocked = False
 
@@ -364,7 +370,10 @@ def length_of_path_from_source_to_all_nodes(maze:list , start_pos: tuple):
 
 
 
-def compute_current_estimated_goal(maze, current_pos):
+def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed):
+    
+    if (num_of_cells_processed < 1):
+        return current_pos
     
     max_p = 0
     cells_with_max_p = list()
@@ -401,4 +410,56 @@ def compute_current_estimated_goal(maze, current_pos):
         return cells_with_least_d[0]
 
 
+def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, parents):
+    
+    if (current_pos == current_estimated_goal) :
+        if(maze[current_pos[0]][current_pos[1]] == target_pos):
+            if(full_maze[current_pos[0]][current_pos[1]] == 2):
+                x = random.randint(0,99)
+                if(x < 20):
+                    compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
+                else:
+                    return True
+            elif(full_maze[current_pos[0]][current_pos[1]] == 3):
+                x = random.randint(0,99)
+                if(x < 50):
+                    compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
+                else:
+                    return True
+            elif(full_maze[current_pos[0]][current_pos[1]] == 4):
+                x = random.randint(0,99)
+                if(x < 80):
+                    compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
+                else:
+                    return True
+        else:
+            compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
+            
+            return False
 
+    else:
+        children = parent_to_child_dict(parents, current_estimated_goal)
+        p_of_x_y = maze[children[current_pos][0]][children[current_pos][1]].probability_of_containing_target
+        for row in range(NUM_ROWS):
+            for column in range(NUM_COLS):
+                if(children[current_pos] == (row,column)):
+                    maze[row][column].probability_of_containing_target = 0
+                else:
+                    maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target/(1-p_of_x_y)
+                
+    return False
+                
+                
+    
+    
+def compute_probability(false_negative_rate, maze, current_pos):
+    
+    p_of_x_y = maze[current_pos[0]][current_pos[1]].probability_of_containing_target
+    for row in range(NUM_ROWS):
+        for column in range(NUM_COLS):
+            if (current_pos == (row,column)):
+                maze[row][column].probability_of_containing_target = (p_of_x_y*false_negative_rate)/((1 - p_of_x_y)+(p_of_x_y*false_negative_rate))
+            else:
+                maze[row][column].probability_of_containing_target = (maze[row][column].probability_of_containing_target)/((1 - p_of_x_y)+(p_of_x_y*false_negative_rate))
+
+ 

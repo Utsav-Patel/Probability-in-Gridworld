@@ -12,15 +12,14 @@ class Cell:
         self.f = INF
 
         self.is_blocked = False
-        self.is_flat = False
-        self.is_forest = False
-        self.is_hilly = False
         self.is_visited = False
         self.is_confirmed = False
         self.is_goal = False
+        self.is_target = False
         
         self.probability_of_finding_target = 1/(NUM_ROWS*NUM_COLS)
         self.probability_of_containing_target = 1/(NUM_ROWS*NUM_COLS)
+        self.false_negative_rate = 0
         
         self.num_neighbor = 0
         #self.min_hidden_cell_neighbor = INF
@@ -33,20 +32,19 @@ class Cell:
         self.four_neighbors = list()
 
     # Reset attributes of this class
-    def reset_except_h(self, default_probability: float = 0.0):
+    def reset_except_h(self):
         self.g = INF
         self.f = INF
         
         self.is_goal = False
         self.is_blocked = False
-        self.is_flat = False
-        self.is_forest = False
-        self.is_hilly = False
         self.is_visited = False
         self.is_confirmed = False
+        self.is_target = False
         
         self.probability_of_finding_target = 1/(NUM_ROWS*NUM_COLS)
         self.probability_of_containing_target = 1/(NUM_ROWS*NUM_COLS)
+        self.false_negative_rate = 0
         
         self.num_neighbor = 0
         #self.min_hidden_cell_neighbor = INF
