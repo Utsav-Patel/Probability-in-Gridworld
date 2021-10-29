@@ -1,17 +1,12 @@
 import random
-from datetime import datetime
-from queue import Queue
-
-import matplotlib.pyplot as plt
+import math
 import numpy as np
+
+from queue import Queue
 from sortedcontainers import SortedSet
 
-from constants import NUM_ROWS, NUM_COLS, X, Y, STARTING_POSITION_OF_AGENT, INF, \
-    RELATIVE_POSITION_OF_TWO_MANDATORY_NEIGHBORS, RELATIVE_POSITION_OF_TWO_SENSED_NEIGHBORS, \
-    RELATIVE_POSITION_OF_NEIGHBORS_TO_CHECK, RELATIVE_POSITION_OF_NEIGHBORS_TO_UPDATE, GOAL_POSITION_OF_AGENT
+from constants import NUM_ROWS, NUM_COLS, X, Y, STARTING_POSITION_OF_AGENT, INF
 
-
-import math
 
 def avg(lst: list):
     """
@@ -69,42 +64,45 @@ def generate_grid_manually():
     array[2][2] = 4
     return array
 
-def compare_fractions(num_1,num_2):
+
+def compare_fractions(num_1, num_2):
     a = num_1[0]
     b = num_1[1]
     c = num_2[0]
     d = num_2[1]
-    
-    val = (a*d - b*c)/(b*d)
-    
-    if(val>0):
+
+    val = (a * d - b * c) / (b * d)
+
+    if val > 0:
         return 1
-    elif(val<0):
+    elif val < 0:
         return 2
     else:
         return 0
-    
+
+
 def add_fractions(num_1, num_2):
     a = num_1[0]
     b = num_1[1]
     c = num_2[0]
     d = num_2[1]
 
-    gcd = math.gcd(a*d+b*c,b*d)
-    x = (a*d+b*c)/gcd
-    y = b*d/gcd
-    return [int(x),int(y)]
-    
+    gcd = math.gcd(a * d + b * c, b * d)
+    x = (a * d + b * c) / gcd
+    y = b * d / gcd
+    return [int(x), int(y)]
+
+
 def subtract_fractions(num_1, num_2):
     a = num_1[0]
     b = num_1[1]
     c = num_2[0]
     d = num_2[1]
-    
-    gcd = math.gcd(a*d-b*c,b*d)
-    x = (a*d-b*c)/gcd
-    y = b*d/gcd
-    return [int(x),int(y)]
+
+    gcd = math.gcd(a * d - b * c, b * d)
+    x = (a * d - b * c) / gcd
+    y = b * d / gcd
+    return [int(x), int(y)]
 
 
 def divide_fractions(num_1, num_2):
@@ -112,11 +110,11 @@ def divide_fractions(num_1, num_2):
     b = num_1[1]
     c = num_2[0]
     d = num_2[1]
-    
-    gcd = math.gcd(a*d,c*b)
-    x = (a*d)/gcd
-    y = (b*c)/gcd
-    return [int(x),int(y)]
+
+    gcd = math.gcd(a * d, c * b)
+    x = (a * d) / gcd
+    y = (b * c) / gcd
+    return [int(x), int(y)]
 
 
 def multiply_fractions(num_1, num_2):
@@ -124,12 +122,12 @@ def multiply_fractions(num_1, num_2):
     b = num_1[1]
     c = num_2[0]
     d = num_2[1]
-    
-    gcd = math.gcd(a*c,d*b)
-    x = (a*c)/gcd
-    y = (b*d)/gcd
-    return [int(x),int(y)]
- 
+
+    gcd = math.gcd(a * c, d * b)
+    x = (a * c) / gcd
+    y = (b * d) / gcd
+    return [int(x), int(y)]
+
 
 def generate_grid_with_probability_p(p):
     """
@@ -138,24 +136,23 @@ def generate_grid_with_probability_p(p):
     :return: Grid of size NUM_ROWS X NUM_COLS with each cell having uniform probability of being blocked is p.
     """
     from constants import NUM_COLS, NUM_ROWS
-    randomly_generated_array = np.random.uniform(low=0.0, high=1.0, size=NUM_ROWS * NUM_COLS).reshape(NUM_ROWS, NUM_COLS)
-    #randomly_generated_array[GOAL_POSITION_OF_AGENT[0]][GOAL_POSITION_OF_AGENT[1]] = 0
+    randomly_generated_array = np.random.uniform(low=0.0, high=1.0, size=NUM_ROWS * NUM_COLS).reshape(NUM_ROWS,
+                                                                                                      NUM_COLS)
+    # randomly_generated_array[GOAL_POSITION_OF_AGENT[0]][GOAL_POSITION_OF_AGENT[1]] = 0
     randomly_generated_array[randomly_generated_array >= (1 - p)] = 1
-    randomly_generated_array[randomly_generated_array < (1 - p)/3] = 2
-    randomly_generated_array[((randomly_generated_array >= (1 - p)/3) & (randomly_generated_array < (1 - p)*2/3))] = 3
-    randomly_generated_array[((randomly_generated_array >= (1 - p)*2/3) & (randomly_generated_array < (1 - p)))] = 4
+    randomly_generated_array[randomly_generated_array < (1 - p) / 3] = 2
+    randomly_generated_array[
+        ((randomly_generated_array >= (1 - p) / 3) & (randomly_generated_array < (1 - p) * 2 / 3))] = 3
+    randomly_generated_array[((randomly_generated_array >= (1 - p) * 2 / 3) & (randomly_generated_array < (1 - p)))] = 4
     randomly_generated_array[STARTING_POSITION_OF_AGENT[0]][STARTING_POSITION_OF_AGENT[1]] = 0
 
-           
-       
     return randomly_generated_array
 
 
 def set_random_target():
-    
-    x_pos = random.randint(0,NUM_ROWS-1)
-    y_pos = random.randint(0,NUM_COLS-1)
-    return (x_pos,y_pos)
+    x_pos = random.randint(0, NUM_ROWS - 1)
+    y_pos = random.randint(0, NUM_COLS - 1)
+    return x_pos, y_pos
 
 
 def check(current_position: tuple):
@@ -167,7 +164,6 @@ def check(current_position: tuple):
     if (0 <= current_position[0] < NUM_ROWS) and (0 <= current_position[1] < NUM_COLS):
         return True
     return False
-
 
 
 def parent_to_child_dict(parent: dict, starting_position: tuple):
@@ -190,7 +186,6 @@ def parent_to_child_dict(parent: dict, starting_position: tuple):
     return child
 
 
-
 def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
     """
     Function to compute A* search
@@ -209,9 +204,8 @@ def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
     # the value of a node when we want to remove a particular node from the sorted set
     node_to_random_number_mapping = dict()
 
-
     GOAL_POSITION_OF_AGENT = goal_pos
-    
+
     compute_heuristics(maze, manhattan_distance, goal_pos)
     # Initialize another dictionary to store parent information
     parents = dict()
@@ -227,7 +221,7 @@ def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
     # Add start position node into the sorted set. We are giving priority to f(n), h(n), and g(n) in the decreasing
     # order. Push random number for random selection if there is conflict between two nodes
     # (If f(n), g(n), and h(n) are same for two nodes)
-    sorted_set.add(((maze[start_pos[0]][start_pos[1]].f, maze[start_pos[0]][start_pos[1]].h, 
+    sorted_set.add(((maze[start_pos[0]][start_pos[1]].f, maze[start_pos[0]][start_pos[1]].h,
                      maze[start_pos[0]][start_pos[1]].g, node_to_random_number_mapping[start_pos]), start_pos))
 
     parents[start_pos] = start_pos
@@ -317,7 +311,7 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
     num_backtracks = 0
     GOAL_POSITION_OF_AGENT = goal_pos
     children = parent_to_child_dict(parents, GOAL_POSITION_OF_AGENT)
-    #print(children)
+    # print(children)
     # Setting current position to starting position so we can start iterating from start_pos
     cur_pos = start_pos
 
@@ -337,11 +331,11 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
         if maze_array[cur_pos[0]][cur_pos[1]] == 1:
             maze[cur_pos[0]][cur_pos[1]].is_blocked = True
         elif maze_array[cur_pos[0]][cur_pos[1]] == 2:
-            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = [2,10]
+            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = [2, 10]
         elif maze_array[cur_pos[0]][cur_pos[1]] == 3:
-            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = [5,10]
+            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = [5, 10]
         elif maze_array[cur_pos[0]][cur_pos[1]] == 4:
-            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = [8,10]
+            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = [8, 10]
         else:
             maze[cur_pos[0]][cur_pos[1]].is_blocked = False
 
@@ -396,7 +390,7 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
     return current_path, num_backtracks
 
 
-def length_of_path_from_source_to_all_nodes(maze:list , start_pos: tuple):
+def length_of_path_from_source_to_all_nodes(maze: list, start_pos: tuple):
     """
     This function will return length of path from source to goal if it exists otherwise it will return INF
     :param maze_array: binary Maze Array
@@ -421,7 +415,7 @@ def length_of_path_from_source_to_all_nodes(maze:list , start_pos: tuple):
 
         # Iterating over valid neighbours of current node
         for neighbour in maze[current_node[0]][current_node[1]].four_neighbors:
-            #neighbour = (current_node[0] + X[ind], current_node[1] + Y[ind])
+            # neighbour = (current_node[0] + X[ind], current_node[1] + Y[ind])
             if check(neighbour) and \
                     (distance_array[neighbour[0]][neighbour[1]] > distance_array[current_node[0]][current_node[1]] + 1) \
                     and (maze[neighbour[0]][neighbour[1]].is_blocked != 1):
@@ -431,72 +425,68 @@ def length_of_path_from_source_to_all_nodes(maze:list , start_pos: tuple):
     return distance_array
 
 
-
 def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed):
-    
-    if (num_of_cells_processed < 1):
+    if num_of_cells_processed < 1:
         return current_pos
-    
-    max_p = [0,1]
+
+    max_p = [0, 1]
     cells_with_max_p = list()
     cells_with_least_d = list()
     least_distance = INF
     distance_array = length_of_path_from_source_to_all_nodes(maze, current_pos)
-    #print(distance_array)
+    # print(distance_array)
     for row in range(NUM_ROWS):
         for col in range(NUM_COLS):
-            if(compare_fractions(maze[row][col].probability_of_containing_target, max_p ) == 1):
+            if compare_fractions(maze[row][col].probability_of_containing_target, max_p) == 1:
                 max_p = maze[row][col].probability_of_containing_target
                 cells_with_max_p = list()
-                cells_with_max_p.append((row,col))
-            elif (compare_fractions(maze[row][col].probability_of_containing_target, max_p ) == 0):
-                cells_with_max_p.append((row,col))
+                cells_with_max_p.append((row, col))
+            elif compare_fractions(maze[row][col].probability_of_containing_target, max_p) == 0:
+                cells_with_max_p.append((row, col))
 
-
-    #print("cells with max p =", cells_with_max_p)
+    # print("cells with max p =", cells_with_max_p)
     for item in cells_with_max_p:
-        #if (distance_array[item[0]][item[1]] < least_distance) and (distance_array[item[0]][item[1]] != 0):
-        if (distance_array[item[0]][item[1]] < least_distance):
+        # if (distance_array[item[0]][item[1]] < least_distance) and (distance_array[item[0]][item[1]] != 0):
+        if distance_array[item[0]][item[1]] < least_distance:
             least_distance = distance_array[item[0]][item[1]]
             cells_with_least_d = list()
-            cells_with_least_d.append((item[0],item[1]))
-        elif (distance_array[item[0]][item[1]] == least_distance):
-            cells_with_least_d.append((item[0],item[1]))
-    
-    if (len(cells_with_least_d) > 1):
-        random_index = random.randint(0,len(cells_with_least_d)-1)
-        #print(cells_with_least_d[random_index])
+            cells_with_least_d.append((item[0], item[1]))
+        elif distance_array[item[0]][item[1]] == least_distance:
+            cells_with_least_d.append((item[0], item[1]))
+
+    if len(cells_with_least_d) > 1:
+        random_index = random.randint(0, len(cells_with_least_d) - 1)
+        # print(cells_with_least_d[random_index])
         return cells_with_least_d[random_index]
     else:
-        #print(cells_with_least_d[0])
+        # print(cells_with_least_d[0])
         return cells_with_least_d[0]
 
 
 def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, parents):
-    
-    if (current_pos == current_estimated_goal) :
-        if(current_pos == target_pos):
-            if(full_maze[current_pos[0]][current_pos[1]] == 2):
-                x = random.randint(0,99)
-                if(x < 20):
+    if (current_pos == current_estimated_goal):
+        if (current_pos == target_pos):
+            if (full_maze[current_pos[0]][current_pos[1]] == 2):
+                x = random.randint(0, 99)
+                if (x < 20):
                     compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
                 else:
                     return True
-            elif(full_maze[current_pos[0]][current_pos[1]] == 3):
-                x = random.randint(0,99)
-                if(x < 50):
+            elif (full_maze[current_pos[0]][current_pos[1]] == 3):
+                x = random.randint(0, 99)
+                if (x < 50):
                     compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
                 else:
                     return True
-            elif(full_maze[current_pos[0]][current_pos[1]] == 4):
-                x = random.randint(0,99)
-                if(x < 80):
+            elif (full_maze[current_pos[0]][current_pos[1]] == 4):
+                x = random.randint(0, 99)
+                if (x < 80):
                     compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
                 else:
                     return True
         else:
             compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
-            
+
             return False
 
     else:
@@ -504,28 +494,31 @@ def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, 
         p_of_x_y = maze[children[current_pos][0]][children[current_pos][1]].probability_of_containing_target
         for row in range(NUM_ROWS):
             for column in range(NUM_COLS):
-                if(children[current_pos] == (row,column)):
-                    maze[row][column].probability_of_containing_target = [0,1]
+                if (children[current_pos] == (row, column)):
+                    maze[row][column].probability_of_containing_target = [0, 1]
                 else:
-                    #maze[row][column].probability_of_containing_target[0] = maze[row][column].probability_of_containing_target[0]/maze[row][column].probability_of_containing_target[1]
-                    #maze[row][column].probability_of_containing_target[1] = (1-(p_of_x_y[0]/p_of_x_y[1]))
-                    maze[row][column].probability_of_containing_target = divide_fractions(maze[row][column].probability_of_containing_target, subtract_fractions((1,1),p_of_x_y))
+                    # maze[row][column].probability_of_containing_target[0] = maze[row][column].probability_of_containing_target[0]/maze[row][column].probability_of_containing_target[1]
+                    # maze[row][column].probability_of_containing_target[1] = (1-(p_of_x_y[0]/p_of_x_y[1]))
+                    maze[row][column].probability_of_containing_target = divide_fractions(
+                        maze[row][column].probability_of_containing_target, subtract_fractions((1, 1), p_of_x_y))
     return False
-                
-                
-    
-    
+
+
 def compute_probability(false_negative_rate, maze, current_pos):
-    
     p_of_x_y = maze[current_pos[0]][current_pos[1]].probability_of_containing_target
     for row in range(NUM_ROWS):
         for column in range(NUM_COLS):
-            if (current_pos == (row,column)):
-                #maze[row][column].probability_of_containing_target[0] = (p_of_x_y[0]/p_of_x_y[1])*false_negative_rate
-                #maze[row][column].probability_of_containing_target[1] = (1 - (p_of_x_y[0]/p_of_x_y[1]))+((p_of_x_y[0]/p_of_x_y[1])*false_negative_rate)
-                maze[row][column].probability_of_containing_target = divide_fractions(multiply_fractions(p_of_x_y,false_negative_rate), add_fractions(subtract_fractions((1,1),p_of_x_y),multiply_fractions(p_of_x_y,false_negative_rate)))
+            if (current_pos == (row, column)):
+                # maze[row][column].probability_of_containing_target[0] = (p_of_x_y[0]/p_of_x_y[1])*false_negative_rate
+                # maze[row][column].probability_of_containing_target[1] = (1 - (p_of_x_y[0]/p_of_x_y[1]))+((p_of_x_y[0]/p_of_x_y[1])*false_negative_rate)
+                maze[row][column].probability_of_containing_target = divide_fractions(
+                    multiply_fractions(p_of_x_y, false_negative_rate),
+                    add_fractions(subtract_fractions((1, 1), p_of_x_y),
+                                  multiply_fractions(p_of_x_y, false_negative_rate)))
             else:
-                #maze[row][column].probability_of_containing_target[0] = maze[row][column].probability_of_containing_target[0]/maze[row][column].probability_of_containing_target[1]
-                #maze[row][column].probability_of_containing_target[1] = ((1 - (p_of_x_y[0]/p_of_x_y[1]))+((p_of_x_y[0]/p_of_x_y[1])*false_negative_rate))
-                maze[row][column].probability_of_containing_target = divide_fractions(maze[row][column].probability_of_containing_target, add_fractions(subtract_fractions((1,1),p_of_x_y),multiply_fractions(p_of_x_y,false_negative_rate)))
- 
+                # maze[row][column].probability_of_containing_target[0] = maze[row][column].probability_of_containing_target[0]/maze[row][column].probability_of_containing_target[1]
+                # maze[row][column].probability_of_containing_target[1] = ((1 - (p_of_x_y[0]/p_of_x_y[1]))+((p_of_x_y[0]/p_of_x_y[1])*false_negative_rate))
+                maze[row][column].probability_of_containing_target = divide_fractions(
+                    maze[row][column].probability_of_containing_target,
+                    add_fractions(subtract_fractions((1, 1), p_of_x_y),
+                                  multiply_fractions(p_of_x_y, false_negative_rate)))
