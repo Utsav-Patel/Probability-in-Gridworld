@@ -28,4 +28,7 @@ class Agent6(Agent):
 
     
     def examine(self, full_maze: np.array, target_pos):
-        examine_and_propogate_probability(self.maze, full_maze, self.current_position, target_pos, self.current_estimated_goal, self.parents)
+        value = examine_and_propogate_probability(self.maze, full_maze, self.current_position, target_pos, self.current_estimated_goal, self.parents)
+        self.num_examinations += 1
+        return value
+        

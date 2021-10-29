@@ -32,7 +32,7 @@ class Agent(ABC):
             self.maze.append(cell_list)
 
         if heuristic_function == 'manhattan':
-            compute_heuristics(self.maze, manhattan_distance)
+            compute_heuristics(self.maze, manhattan_distance, (NUM_ROWS-1,NUM_COLS-1))
 
         # Initialize some variables
         self.algorithm = algorithm
@@ -50,7 +50,8 @@ class Agent(ABC):
         self.num_astar_calls = 0
         self.num_bumps = 0
         self.num_early_termination = 0
-
+        
+        self.num_examinations = 0
 
     def pre_planning(self):
         self.current_estimated_goal = compute_current_estimated_goal(self.maze, self.current_position, self.num_cells_processed_while_planning)
@@ -62,7 +63,7 @@ class Agent(ABC):
         if self.algorithm == 'astar':
             self.parents, num_explored_nodes = astar_search(self.maze, self.current_position, goal_pos)[:2]
             self.num_cells_processed_while_planning += num_explored_nodes
-            print(self.num_cells_processed_while_planning)
+            #print(self.num_cells_processed_while_planning)
         # elif self.algorithm == 'bfs':
         #     parents, num_explored_nodes = bfs_search(maze, start_pos, goal_pos)
         else:
@@ -88,7 +89,9 @@ class Agent(ABC):
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
                 self.maze[row][col].reset()
-
+        
+        self.num_examinations = 0
+        
     @abstractmethod
     def execution(self, full_maze: np.array):
         pass

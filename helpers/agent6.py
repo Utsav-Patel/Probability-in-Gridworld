@@ -11,7 +11,7 @@ from constants import NUM_ROWS, NUM_COLS, X, Y, STARTING_POSITION_OF_AGENT, INF,
     RELATIVE_POSITION_OF_NEIGHBORS_TO_CHECK, RELATIVE_POSITION_OF_NEIGHBORS_TO_UPDATE, GOAL_POSITION_OF_AGENT
 
 
-
+import math
 
 def avg(lst: list):
     """
@@ -37,7 +37,7 @@ def manhattan_distance(pos1: tuple, pos2: tuple):
     return distance
 
 
-def compute_heuristics(maze: list, h_func):
+def compute_heuristics(maze: list, h_func, goal_pos):
     """
     Compute Heuristic for the current maze
     :param maze: maze of type list
@@ -48,7 +48,7 @@ def compute_heuristics(maze: list, h_func):
     for row in range(NUM_ROWS):
         for col in range(NUM_COLS):
             if not maze[row][col].is_blocked:
-                maze[row][col].h = h_func((row, col), GOAL_POSITION_OF_AGENT)
+                maze[row][col].h = h_func((row, col), goal_pos)
 
 
 def generate_grid_manually():
@@ -69,6 +69,67 @@ def generate_grid_manually():
     array[2][2] = 4
     return array
 
+def compare_fractions(num_1,num_2):
+    a = num_1[0]
+    b = num_1[1]
+    c = num_2[0]
+    d = num_2[1]
+    
+    val = (a*d - b*c)/(b*d)
+    
+    if(val>0):
+        return 1
+    elif(val<0):
+        return 2
+    else:
+        return 0
+    
+def add_fractions(num_1, num_2):
+    a = num_1[0]
+    b = num_1[1]
+    c = num_2[0]
+    d = num_2[1]
+
+    gcd = math.gcd(a*d+b*c,b*d)
+    x = (a*d+b*c)/gcd
+    y = b*d/gcd
+    return [int(x),int(y)]
+    
+def subtract_fractions(num_1, num_2):
+    a = num_1[0]
+    b = num_1[1]
+    c = num_2[0]
+    d = num_2[1]
+    
+    gcd = math.gcd(a*d-b*c,b*d)
+    x = (a*d-b*c)/gcd
+    y = b*d/gcd
+    return [int(x),int(y)]
+
+
+def divide_fractions(num_1, num_2):
+    a = num_1[0]
+    b = num_1[1]
+    c = num_2[0]
+    d = num_2[1]
+    
+    gcd = math.gcd(a*d,c*b)
+    x = (a*d)/gcd
+    y = (b*c)/gcd
+    return [int(x),int(y)]
+
+
+def multiply_fractions(num_1, num_2):
+    a = num_1[0]
+    b = num_1[1]
+    c = num_2[0]
+    d = num_2[1]
+    
+    gcd = math.gcd(a*c,d*b)
+    x = (a*c)/gcd
+    y = (b*d)/gcd
+    return [int(x),int(y)]
+ 
 
 def generate_grid_with_probability_p(p):
     """
@@ -151,6 +212,7 @@ def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
 
     GOAL_POSITION_OF_AGENT = goal_pos
     
+    compute_heuristics(maze, manhattan_distance, goal_pos)
     # Initialize another dictionary to store parent information
     parents = dict()
 
@@ -255,7 +317,7 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
     num_backtracks = 0
     GOAL_POSITION_OF_AGENT = goal_pos
     children = parent_to_child_dict(parents, GOAL_POSITION_OF_AGENT)
-    print(children)
+    #print(children)
     # Setting current position to starting position so we can start iterating from start_pos
     cur_pos = start_pos
 
@@ -275,11 +337,11 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
         if maze_array[cur_pos[0]][cur_pos[1]] == 1:
             maze[cur_pos[0]][cur_pos[1]].is_blocked = True
         elif maze_array[cur_pos[0]][cur_pos[1]] == 2:
-            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = 0.2
+            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = [2,10]
         elif maze_array[cur_pos[0]][cur_pos[1]] == 3:
-            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = 0.5
+            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = [5,10]
         elif maze_array[cur_pos[0]][cur_pos[1]] == 4:
-            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = 0.8
+            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = [8,10]
         else:
             maze[cur_pos[0]][cur_pos[1]].is_blocked = False
 
@@ -375,45 +437,45 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed):
     if (num_of_cells_processed < 1):
         return current_pos
     
-    max_p = 0
+    max_p = [0,1]
     cells_with_max_p = list()
     cells_with_least_d = list()
     least_distance = INF
     distance_array = length_of_path_from_source_to_all_nodes(maze, current_pos)
-    
+    #print(distance_array)
     for row in range(NUM_ROWS):
         for col in range(NUM_COLS):
-            if (maze[row][col].probability_of_containing_target > max_p ):
+            if(compare_fractions(maze[row][col].probability_of_containing_target, max_p ) == 1):
                 max_p = maze[row][col].probability_of_containing_target
                 cells_with_max_p = list()
                 cells_with_max_p.append((row,col))
-            elif (maze[row][col].probability_of_containing_target == max_p ):
+            elif (compare_fractions(maze[row][col].probability_of_containing_target, max_p ) == 0):
                 cells_with_max_p.append((row,col))
 
 
-
+    #print("cells with max p =", cells_with_max_p)
     for item in cells_with_max_p:
-        if (distance_array[item[0]][item[1]] < least_distance) and (distance_array[item[0]][item[1]] != 0):
+        #if (distance_array[item[0]][item[1]] < least_distance) and (distance_array[item[0]][item[1]] != 0):
+        if (distance_array[item[0]][item[1]] < least_distance):
             least_distance = distance_array[item[0]][item[1]]
             cells_with_least_d = list()
             cells_with_least_d.append((item[0],item[1]))
         elif (distance_array[item[0]][item[1]] == least_distance):
             cells_with_least_d.append((item[0],item[1]))
     
-    
     if (len(cells_with_least_d) > 1):
         random_index = random.randint(0,len(cells_with_least_d)-1)
-        print(cells_with_least_d[random_index])
+        #print(cells_with_least_d[random_index])
         return cells_with_least_d[random_index]
     else:
-        print(cells_with_least_d[0])
+        #print(cells_with_least_d[0])
         return cells_with_least_d[0]
 
 
 def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, parents):
     
     if (current_pos == current_estimated_goal) :
-        if(maze[current_pos[0]][current_pos[1]] == target_pos):
+        if(current_pos == target_pos):
             if(full_maze[current_pos[0]][current_pos[1]] == 2):
                 x = random.randint(0,99)
                 if(x < 20):
@@ -443,10 +505,11 @@ def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, 
         for row in range(NUM_ROWS):
             for column in range(NUM_COLS):
                 if(children[current_pos] == (row,column)):
-                    maze[row][column].probability_of_containing_target = 0
+                    maze[row][column].probability_of_containing_target = [0,1]
                 else:
-                    maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target/(1-p_of_x_y)
-                
+                    #maze[row][column].probability_of_containing_target[0] = maze[row][column].probability_of_containing_target[0]/maze[row][column].probability_of_containing_target[1]
+                    #maze[row][column].probability_of_containing_target[1] = (1-(p_of_x_y[0]/p_of_x_y[1]))
+                    maze[row][column].probability_of_containing_target = divide_fractions(maze[row][column].probability_of_containing_target, subtract_fractions((1,1),p_of_x_y))
     return False
                 
                 
@@ -458,8 +521,11 @@ def compute_probability(false_negative_rate, maze, current_pos):
     for row in range(NUM_ROWS):
         for column in range(NUM_COLS):
             if (current_pos == (row,column)):
-                maze[row][column].probability_of_containing_target = (p_of_x_y*false_negative_rate)/((1 - p_of_x_y)+(p_of_x_y*false_negative_rate))
+                #maze[row][column].probability_of_containing_target[0] = (p_of_x_y[0]/p_of_x_y[1])*false_negative_rate
+                #maze[row][column].probability_of_containing_target[1] = (1 - (p_of_x_y[0]/p_of_x_y[1]))+((p_of_x_y[0]/p_of_x_y[1])*false_negative_rate)
+                maze[row][column].probability_of_containing_target = divide_fractions(multiply_fractions(p_of_x_y,false_negative_rate), add_fractions(subtract_fractions((1,1),p_of_x_y),multiply_fractions(p_of_x_y,false_negative_rate)))
             else:
-                maze[row][column].probability_of_containing_target = (maze[row][column].probability_of_containing_target)/((1 - p_of_x_y)+(p_of_x_y*false_negative_rate))
-
+                #maze[row][column].probability_of_containing_target[0] = maze[row][column].probability_of_containing_target[0]/maze[row][column].probability_of_containing_target[1]
+                #maze[row][column].probability_of_containing_target[1] = ((1 - (p_of_x_y[0]/p_of_x_y[1]))+((p_of_x_y[0]/p_of_x_y[1])*false_negative_rate))
+                maze[row][column].probability_of_containing_target = divide_fractions(maze[row][column].probability_of_containing_target, add_fractions(subtract_fractions((1,1),p_of_x_y),multiply_fractions(p_of_x_y,false_negative_rate)))
  
