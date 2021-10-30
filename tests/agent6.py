@@ -63,7 +63,7 @@ def find_the_target():
         if(length_of_path_from_source_to_goal(random_maze, STARTING_POSITION_OF_AGENT, target_pos) != INF):
             break
         
-
+    print("done setting maze and target")
     while not target_found:
         agent.pre_planning()
         while length_of_path_from_source_to_goal(random_maze, STARTING_POSITION_OF_AGENT, agent.current_estimated_goal) == INF:
@@ -100,22 +100,26 @@ def find_the_target():
     movements = compute_explored_cells_from_path(agent.final_paths)
     #print("Number of total examinations = ",agent.num_examinations)
     #print("Number of movements = ", movements)
-    return [p, agent.num_examinations, movements]
+    return [p, agent.num_examinations, movements, agent.num_astar_calls]
 
 #find_the_target()
 n_sim = 2
 total_p = []
 total_examinations = []
 total_movements = []
+total_astar = []
 start_time = time.time()
 for i in range(1,n_sim):
     total = find_the_target()
     total_p.append(total[0])
     total_examinations.append(total[1])
     total_movements.append(total[2])
+    total_astar.append(total[3])
     
 end_time = time.time()
-print(np.average(total_movements))    
-print(np.average(total_p)) 
-print(np.average(total_examinations)) 
+print("Average Number of movements = ", np.average(total_movements))    
+print("Average total probability = ", np.average(total_p)) 
+print("Average Number of total examinations = ", np.average(total_examinations)) 
+print("Average Number of Astar calls = ", np.average(total_astar)) 
+print("total examinations divided by astar calls =",np.average(total_examinations)/np.average(total_astar))
 print(f"Runtime = {end_time - start_time}")
