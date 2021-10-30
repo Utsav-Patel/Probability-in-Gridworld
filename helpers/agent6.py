@@ -166,6 +166,20 @@ def check(current_position: tuple):
     return False
 
 
+def compute_explored_cells_from_path(paths: list):
+    """
+    This function will compute the trajectory length from the list of paths returned by any repeated forward algorithm
+    :param paths: list of paths
+    :return: trajectory length
+    """
+
+    trajectory_length = 0
+    for path in paths:
+        trajectory_length += len(path)
+    trajectory_length -= len(paths)
+    return trajectory_length
+
+
 def parent_to_child_dict(parent: dict, starting_position: tuple):
     """
     This function is helpful to generate children dictionary from parents dictionary
@@ -177,7 +191,8 @@ def parent_to_child_dict(parent: dict, starting_position: tuple):
 
     child[starting_position] = starting_position
     cur_pos = starting_position
-
+    #print(parent)
+    #print(parent[cur_pos])
     # Storing child of each node so we can iterate from start_pos to goal_pos
     while cur_pos != parent[cur_pos]:
         child[parent[cur_pos]] = cur_pos
@@ -501,7 +516,7 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed):
         return cells_with_least_d[0]
 
 
-def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, parents):
+def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, node):
     if (current_pos == current_estimated_goal):
         if (current_pos == target_pos):
             if (full_maze[current_pos[0]][current_pos[1]] == 2):
@@ -528,11 +543,13 @@ def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, 
             return False
 
     else:
-        children = parent_to_child_dict(parents, current_estimated_goal)
-        p_of_x_y = maze[children[current_pos][0]][children[current_pos][1]].probability_of_containing_target
+        #children = parent_to_child_dict(parents, current_estimated_goal)
+        #p_of_x_y = maze[children[current_pos][0]][children[current_pos][1]].probability_of_containing_target
+        p_of_x_y = maze[node[0]][node[1]].probability_of_containing_target
         for row in range(NUM_ROWS):
             for column in range(NUM_COLS):
-                if (children[current_pos] == (row, column)):
+                #if (children[current_pos] == (row, column)):
+                if (node == (row, column)):
                     maze[row][column].probability_of_containing_target = [0, 1]
                 else:
                     # maze[row][column].probability_of_containing_target[0] = maze[row][column].probability_of_containing_target[0]/maze[row][column].probability_of_containing_target[1]
