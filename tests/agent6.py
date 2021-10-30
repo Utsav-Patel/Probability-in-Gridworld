@@ -1,5 +1,5 @@
-from constants import NUM_COLS, NUM_ROWS
-from helpers.agent6 import generate_grid_with_probability_p, set_random_target, generate_grid_manually, add_fractions
+from constants import NUM_COLS, NUM_ROWS, STARTING_POSITION_OF_AGENT, INF
+from helpers.agent6 import generate_grid_with_probability_p, set_random_target, generate_grid_manually, add_fractions, length_of_path_from_source_to_goal
 from src.Agent6 import Agent6
 
 
@@ -45,31 +45,37 @@ agent = Agent6()
 
 def find_the_target():
     agent.reset()
-    random_maze = generate_grid_manually()
-    # random_maze = generate_grid_with_probability_p(0.3)
-    target_pos = set_random_target()
-
-    while random_maze[target_pos[0]][target_pos[1]] == 1:
-        target_pos = set_random_target()
-    print("Target pos =", target_pos)
-
     target_found = False
+    
+    
+    while(True):
+        #random_maze = generate_grid_manually()
+        random_maze = generate_grid_with_probability_p(0.3)
+        while random_maze[STARTING_POSITION_OF_AGENT[0]][STARTING_POSITION_OF_AGENT[1]] == 1:
+            random_maze = generate_grid_with_probability_p(0.3)
+        target_pos = set_random_target()
+        while random_maze[target_pos[0]][target_pos[1]] == 1:
+            target_pos = set_random_target()
+        #print("Target pos =", target_pos)
+        if(length_of_path_from_source_to_goal(random_maze, STARTING_POSITION_OF_AGENT, target_pos) != INF):
+            break
+        
 
     while not target_found:
         agent.pre_planning()
-
+      
         agent.planning(agent.current_estimated_goal)
-        print("Current pos before execution =", agent.current_position)
-        print("Current Estimated Goal =", agent.current_estimated_goal)
+        #print("Current pos before execution =", agent.current_position)
+        #print("Current Estimated Goal =", agent.current_estimated_goal)
         # print(agent.parents)
         # print(agent.num_cells_processed_while_planning)
-
+  
         agent.execution(random_maze)
         print("Target pos =", target_pos)
         print("Current pos =", agent.current_position)
         print("Current Estimated Goal =", agent.current_estimated_goal)
         # print("Final path = ",agent.final_paths)
-
+  
         target_found = agent.examine(random_maze, target_pos)
         print("Was target found ?", target_found)
         p = [0, 1]
@@ -77,11 +83,11 @@ def find_the_target():
             for col in range(NUM_COLS):
                 p = add_fractions(p, agent.maze[row][col].probability_of_containing_target)
                 # print(agent.maze[row][col].probability_of_containing_target)
-
-        print("Total Probability =", p[0] / p[1])
-        if agent.num_cells_processed_while_planning > 200:
-            break
-    print(agent.num_examinations)
+  
+        #print("Total Probability =", p[0] / p[1])
+        #if agent.num_cells_processed_while_planning > 200:
+         #   break
+        print("Number of total examinations = ",agent.num_examinations)
 
 
 find_the_target()
