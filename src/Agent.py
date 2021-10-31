@@ -6,7 +6,8 @@ import numpy as np
 
 from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, X, Y
 from src.Cell import Cell
-from helpers.agent6 import astar_search, compute_heuristics, manhattan_distance, check, compute_current_estimated_goal
+from helpers.helper import astar_search, compute_heuristics, manhattan_distance, check
+from helpers.agent6 import compute_current_estimated_goal
 
 
 # Agent class
@@ -32,7 +33,7 @@ class Agent(ABC):
             self.maze.append(cell_list)
 
         if heuristic_function == 'manhattan':
-            compute_heuristics(self.maze, manhattan_distance, (NUM_ROWS-1,NUM_COLS-1))
+            compute_heuristics(self.maze, manhattan_distance, (NUM_ROWS-1, NUM_COLS-1))
 
         # Initialize some variables
         self.algorithm = algorithm
@@ -54,7 +55,8 @@ class Agent(ABC):
         self.num_examinations = 0
 
     def pre_planning(self):
-        self.current_estimated_goal = compute_current_estimated_goal(self.maze, self.current_position, self.num_cells_processed_while_planning)
+        self.current_estimated_goal = compute_current_estimated_goal(self.maze, self.current_position,
+                                                                     self.num_cells_processed_while_planning)
         
 
     # General method for planning
