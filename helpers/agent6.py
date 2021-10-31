@@ -5,7 +5,7 @@ import numpy as np
 from queue import Queue
 from sortedcontainers import SortedSet
 
-from constants import NUM_ROWS, NUM_COLS, X, Y, STARTING_POSITION_OF_AGENT, INF
+from constants import NUM_ROWS, NUM_COLS, X, Y, STARTING_POSITION_OF_AGENT, INF, HILLY_FALSE_NEGATIVE_RATE, FLAT_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE
 
 
 def avg(lst: list):
@@ -144,7 +144,7 @@ def generate_grid_with_probability_p(p):
     randomly_generated_array[
         ((randomly_generated_array >= (1 - p) / 3) & (randomly_generated_array < (1 - p) * 2 / 3))] = 3
     randomly_generated_array[((randomly_generated_array >= (1 - p) * 2 / 3) & (randomly_generated_array < (1 - p)))] = 4
-    randomly_generated_array[STARTING_POSITION_OF_AGENT[0]][STARTING_POSITION_OF_AGENT[1]] = 0
+    #randomly_generated_array[STARTING_POSITION_OF_AGENT[0]][STARTING_POSITION_OF_AGENT[1]] = 0
 
     return randomly_generated_array
 
@@ -166,6 +166,20 @@ def check(current_position: tuple):
     return False
 
 
+def compute_explored_cells_from_path(paths: list):
+    """
+    This function will compute the trajectory length from the list of paths returned by any repeated forward algorithm
+    :param paths: list of paths
+    :return: trajectory length
+    """
+
+    trajectory_length = 0
+    for path in paths:
+        trajectory_length += len(path)
+    trajectory_length -= len(paths)
+    return trajectory_length
+
+
 def parent_to_child_dict(parent: dict, starting_position: tuple):
     """
     This function is helpful to generate children dictionary from parents dictionary
@@ -177,7 +191,8 @@ def parent_to_child_dict(parent: dict, starting_position: tuple):
 
     child[starting_position] = starting_position
     cur_pos = starting_position
-
+    #print(parent)
+    #print(parent[cur_pos])
     # Storing child of each node so we can iterate from start_pos to goal_pos
     while cur_pos != parent[cur_pos]:
         child[parent[cur_pos]] = cur_pos
@@ -331,11 +346,11 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
         if maze_array[cur_pos[0]][cur_pos[1]] == 1:
             maze[cur_pos[0]][cur_pos[1]].is_blocked = True
         elif maze_array[cur_pos[0]][cur_pos[1]] == 2:
-            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = [2, 10]
+            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = FLAT_FALSE_NEGATIVE_RATE
         elif maze_array[cur_pos[0]][cur_pos[1]] == 3:
-            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = [5, 10]
+            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = FOREST_FALSE_NEGATIVE_RATE
         elif maze_array[cur_pos[0]][cur_pos[1]] == 4:
-            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = [8, 10]
+            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = HILLY_FALSE_NEGATIVE_RATE
         else:
             maze[cur_pos[0]][cur_pos[1]].is_blocked = False
 
@@ -424,6 +439,44 @@ def length_of_path_from_source_to_all_nodes(maze: list, start_pos: tuple):
 
     return distance_array
 
+def length_of_path_from_source_to_goal(maze_array: np.array, start_pos: tuple, goal_pos: tuple):
+    """
+    This function will return length of path from source to goal if it exists otherwise it will return INF
+    :param maze_array: binary Maze Array
+    :param start_pos: Starting position of the maze from where you want to start
+    :param goal_pos: Goal position of the maze where you want to reach
+    :return: Shortest distance from the source to goal on the given maze array
+    """
+
+    # Initialize queue to compute distance
+    q = Queue()
+
+    # Initialize distance array
+    distance_array = np.full((NUM_ROWS, NUM_COLS), INF)
+
+    # Adding starting position to the queue and assigning its distance to zero
+    q.put(start_pos)
+    distance_array[start_pos[0]][start_pos[1]] = 0
+
+    # Keep popping value from the queue until it gets empty
+    while not q.empty():
+        current_node = q.get()
+
+        # If goal position is found, we should return its distance
+        if current_node == goal_pos:
+            return distance_array[goal_pos[0]][goal_pos[1]]
+
+        # Iterating over valid neighbours of current node
+        for ind in range(len(X)):
+            neighbour = (current_node[0] + X[ind], current_node[1] + Y[ind])
+            if check(neighbour) and \
+                    (distance_array[neighbour[0]][neighbour[1]] > distance_array[current_node[0]][current_node[1]] + 1) \
+                    and (maze_array[neighbour[0]][neighbour[1]] != 1):
+                q.put(neighbour)
+                distance_array[neighbour[0]][neighbour[1]] = distance_array[current_node[0]][current_node[1]] + 1
+
+    return distance_array[goal_pos[0]][goal_pos[1]]
+
 
 def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed):
     if num_of_cells_processed < 1:
@@ -463,7 +516,7 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed):
         return cells_with_least_d[0]
 
 
-def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, parents):
+def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, node):
     if (current_pos == current_estimated_goal):
         if (current_pos == target_pos):
             if (full_maze[current_pos[0]][current_pos[1]] == 2):
@@ -490,17 +543,19 @@ def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, 
             return False
 
     else:
-        children = parent_to_child_dict(parents, current_estimated_goal)
-        p_of_x_y = maze[children[current_pos][0]][children[current_pos][1]].probability_of_containing_target
+        #children = parent_to_child_dict(parents, current_estimated_goal)
+        #p_of_x_y = maze[children[current_pos][0]][children[current_pos][1]].probability_of_containing_target
+        p_of_x_y = maze[node[0]][node[1]].probability_of_containing_target
         for row in range(NUM_ROWS):
             for column in range(NUM_COLS):
-                if (children[current_pos] == (row, column)):
+                #if (children[current_pos] == (row, column)):
+                if (node == (row, column)):
                     maze[row][column].probability_of_containing_target = [0, 1]
                 else:
                     # maze[row][column].probability_of_containing_target[0] = maze[row][column].probability_of_containing_target[0]/maze[row][column].probability_of_containing_target[1]
                     # maze[row][column].probability_of_containing_target[1] = (1-(p_of_x_y[0]/p_of_x_y[1]))
                     maze[row][column].probability_of_containing_target = divide_fractions(
-                        maze[row][column].probability_of_containing_target, subtract_fractions((1, 1), p_of_x_y))
+                        maze[row][column].probability_of_containing_target, subtract_fractions([1, 1], p_of_x_y))
     return False
 
 
@@ -513,12 +568,12 @@ def compute_probability(false_negative_rate, maze, current_pos):
                 # maze[row][column].probability_of_containing_target[1] = (1 - (p_of_x_y[0]/p_of_x_y[1]))+((p_of_x_y[0]/p_of_x_y[1])*false_negative_rate)
                 maze[row][column].probability_of_containing_target = divide_fractions(
                     multiply_fractions(p_of_x_y, false_negative_rate),
-                    add_fractions(subtract_fractions((1, 1), p_of_x_y),
+                    add_fractions(subtract_fractions([1, 1], p_of_x_y),
                                   multiply_fractions(p_of_x_y, false_negative_rate)))
             else:
                 # maze[row][column].probability_of_containing_target[0] = maze[row][column].probability_of_containing_target[0]/maze[row][column].probability_of_containing_target[1]
                 # maze[row][column].probability_of_containing_target[1] = ((1 - (p_of_x_y[0]/p_of_x_y[1]))+((p_of_x_y[0]/p_of_x_y[1])*false_negative_rate))
                 maze[row][column].probability_of_containing_target = divide_fractions(
                     maze[row][column].probability_of_containing_target,
-                    add_fractions(subtract_fractions((1, 1), p_of_x_y),
+                    add_fractions(subtract_fractions([1, 1], p_of_x_y),
                                   multiply_fractions(p_of_x_y, false_negative_rate)))

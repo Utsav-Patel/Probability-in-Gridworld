@@ -19,7 +19,7 @@ class Cell:
         
         self.probability_of_finding_target = [1, NUM_ROWS*NUM_COLS]
         self.probability_of_containing_target = [1, NUM_ROWS*NUM_COLS]
-        self.false_negative_rate = 0
+        self.false_negative_rate = [0,1]
         
         self.num_neighbor = 0
         #self.min_hidden_cell_neighbor = INF
