@@ -1,9 +1,9 @@
 import time
 import numpy as np
 
-from constants import NUM_COLS, NUM_ROWS, STARTING_POSITION_OF_AGENT, INF
-from helpers.agent6 import set_random_target, generate_grid_manually, add_fractions, \
-    length_of_path_from_source_to_goal, examine_and_propogate_probability
+from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID
+from helpers.agent6 import set_random_target, generate_grid_manually, length_of_path_from_source_to_goal, \
+    examine_and_propogate_probability
 from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path
 from src.Agent6 import Agent6
 
@@ -52,9 +52,10 @@ def find_the_target():
     agent.reset()
     target_found = False
 
+    cnt = 0
     while True:
         # random_maze = generate_grid_manually()
-        random_maze = generate_grid_with_probability_p(0.3)
+        random_maze = generate_grid_with_probability_p(PROBABILITY_OF_GRID)
         target_pos = set_random_target()
         while random_maze[target_pos[0]][target_pos[1]] == 1:
             target_pos = set_random_target()
@@ -63,11 +64,10 @@ def find_the_target():
             break
 
     print('Target Terrain: ', random_maze[target_pos[0]][target_pos[1]])
-    input()
+    # input()
     print("done setting maze and target")
     while not target_found:
         agent.pre_planning()
-        cnt = 0
         while length_of_path_from_source_to_goal(random_maze, STARTING_POSITION_OF_AGENT,
                                                  agent.current_estimated_goal) == INF:
             cnt += 1
@@ -103,6 +103,8 @@ def find_the_target():
         # print("Total Probability =", p[0] / p[1])
         # if agent.num_cells_processed_while_planning > 200:
         #   break
+
+    print('Total counts', cnt)
     movements = compute_explored_cells_from_path(agent.final_paths)
     # print("Number of total examinations = ",agent.num_examinations)
     # print("Number of movements = ", movements)
