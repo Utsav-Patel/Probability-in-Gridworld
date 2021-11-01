@@ -121,8 +121,10 @@ if __name__ == "__main__":
     total_astar = list()
     start_time = time.time()
 
-    n_sim = int(multiprocessing.cpu_count())
-    p = multiprocessing.Pool(processes=n_sim)
+    n_cores = int(multiprocessing.cpu_count())
+
+    print('Number of cores', n_cores)
+    p = multiprocessing.Pool(processes=n_cores)
 
     results = p.imap_unordered(find_the_target, range(NUM_ITERATIONS))
 
