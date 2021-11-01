@@ -3,9 +3,9 @@ import numpy as np
 import multiprocessing
 
 from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS
-from helpers.agent6 import set_random_target, generate_grid_manually, length_of_path_from_source_to_goal, \
-    examine_and_propogate_probability
-from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path, add_fractions
+from helpers.agent6 import set_random_target, generate_grid_manually, examine_and_propogate_probability
+from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path, add_fractions,\
+    length_of_path_from_source_to_goal
 from src.Agent6 import Agent6
 
 

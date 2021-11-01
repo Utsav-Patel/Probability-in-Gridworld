@@ -1,8 +1,6 @@
 import random
 import numpy as np
 
-from queue import Queue
-
 from constants import NUM_ROWS, NUM_COLS, X, Y, INF, HILLY_FALSE_NEGATIVE_RATE, FLAT_FALSE_NEGATIVE_RATE, \
     FOREST_FALSE_NEGATIVE_RATE, ZERO_PROBABILITY, ONE_PROBABILITY
 from helpers.helper import check, parent_to_child_dict, compare_fractions
@@ -129,125 +127,6 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
         #         current_path.append(cur_pos)
 
     return current_path, num_backtracks
-
-
-def length_of_path_from_source_to_all_nodes(maze: list, start_pos: tuple):
-    """
-    This function will return length of path from source to goal if it exists otherwise it will return INF
-    :param maze_array: binary Maze Array
-    :param start_pos: Starting position of the maze from where you want to start
-    :param goal_pos: Goal position of the maze where you want to reach
-    :return: Shortest distance from the source to goal on the given maze array
-    """
-
-    # Initialize queue to compute distance
-    q = Queue()
-
-    # Initialize distance array
-    distance_array = np.full((NUM_ROWS, NUM_COLS), INF)
-
-    # Adding starting position to the queue and assigning its distance to zero
-    q.put(start_pos)
-    distance_array[start_pos[0]][start_pos[1]] = 0
-
-    # Keep popping value from the queue until it gets empty
-    while not q.empty():
-        current_node = q.get()
-
-        # Iterating over valid neighbours of current node
-        for neighbour in maze[current_node[0]][current_node[1]].four_neighbors:
-            # neighbour = (current_node[0] + X[ind], current_node[1] + Y[ind])
-            if check(neighbour) and \
-                    (distance_array[neighbour[0]][neighbour[1]] > distance_array[current_node[0]][current_node[1]] + 1) \
-                    and (maze[neighbour[0]][neighbour[1]].is_blocked != 1):
-                q.put(neighbour)
-                distance_array[neighbour[0]][neighbour[1]] = distance_array[current_node[0]][current_node[1]] + 1
-
-    return distance_array
-
-
-def length_of_path_from_source_to_goal(maze_array: np.array, start_pos: tuple, goal_pos: tuple):
-    """
-    This function will return length of path from source to goal if it exists otherwise it will return INF
-    :param maze_array: binary Maze Array
-    :param start_pos: Starting position of the maze from where you want to start
-    :param goal_pos: Goal position of the maze where you want to reach
-    :return: Shortest distance from the source to goal on the given maze array
-    """
-
-    # Initialize queue to compute distance
-    q = Queue()
-
-    # Initialize distance array
-    distance_array = np.full((NUM_ROWS, NUM_COLS), INF)
-
-    # Adding starting position to the queue and assigning its distance to zero
-    q.put(start_pos)
-    distance_array[start_pos[0]][start_pos[1]] = 0
-
-    # Keep popping value from the queue until it gets empty
-    while not q.empty():
-        current_node = q.get()
-
-        # If goal position is found, we should return its distance
-        if current_node == goal_pos:
-            return distance_array[goal_pos[0]][goal_pos[1]]
-
-        # Iterating over valid neighbours of current node
-        for ind in range(len(X)):
-            neighbour = (current_node[0] + X[ind], current_node[1] + Y[ind])
-            if check(neighbour) and \
-                    (distance_array[neighbour[0]][neighbour[1]] > distance_array[current_node[0]][current_node[1]] + 1) \
-                    and (maze_array[neighbour[0]][neighbour[1]] != 1):
-                q.put(neighbour)
-                distance_array[neighbour[0]][neighbour[1]] = distance_array[current_node[0]][current_node[1]] + 1
-
-    return distance_array[goal_pos[0]][goal_pos[1]]
-
-
-def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed):
-    if num_of_cells_processed < 1:
-        return current_pos
-
-    max_p = ZERO_PROBABILITY
-    cells_with_max_p = list()
-    cells_with_least_d = list()
-    least_distance = INF
-    distance_array = length_of_path_from_source_to_all_nodes(maze, current_pos)
-    # print(distance_array)
-
-    sum_probabilities = 0.0
-    for row in range(NUM_ROWS):
-        for col in range(NUM_COLS):
-            sum_probabilities += maze[row][col].probability_of_containing_target
-
-    for row in range(NUM_ROWS):
-        for col in range(NUM_COLS):
-            maze[row][col].probability_of_containing_target /= sum_probabilities
-            if compare_fractions(maze[row][col].probability_of_containing_target, max_p) == 1:
-                max_p = maze[row][col].probability_of_containing_target
-                cells_with_max_p = list()
-                cells_with_max_p.append((row, col))
-            elif compare_fractions(maze[row][col].probability_of_containing_target, max_p) == 0:
-                cells_with_max_p.append((row, col))
-
-    # print("cells with max p =", cells_with_max_p)
-    for item in cells_with_max_p:
-        # if (distance_array[item[0]][item[1]] < least_distance) and (distance_array[item[0]][item[1]] != 0):
-        if distance_array[item[0]][item[1]] < least_distance:
-            least_distance = distance_array[item[0]][item[1]]
-            cells_with_least_d = list()
-            cells_with_least_d.append((item[0], item[1]))
-        elif distance_array[item[0]][item[1]] == least_distance:
-            cells_with_least_d.append((item[0], item[1]))
-
-    if len(cells_with_least_d) > 1:
-        random_index = random.randint(0, len(cells_with_least_d) - 1)
-        # print(cells_with_least_d[random_index])
-        return cells_with_least_d[random_index]
-    else:
-        # print(cells_with_least_d[0])
-        return cells_with_least_d[0]
 
 
 def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, node):

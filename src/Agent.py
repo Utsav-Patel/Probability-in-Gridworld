@@ -6,7 +6,7 @@ import numpy as np
 from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, X, Y
 from src.Cell import Cell
 from helpers.helper import astar_search, check
-from helpers.agent6 import compute_current_estimated_goal
+from helpers.helper import compute_current_estimated_goal
 
 
 # Agent class
