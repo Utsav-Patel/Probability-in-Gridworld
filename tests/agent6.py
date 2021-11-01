@@ -1,7 +1,8 @@
 import time
 import numpy as np
+import multiprocessing
 
-from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, ONE_PROBABILITY, ZERO_PROBABILITY
+from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS
 from helpers.agent6 import set_random_target, generate_grid_manually, length_of_path_from_source_to_goal, \
     examine_and_propogate_probability
 from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path, add_fractions
@@ -48,7 +49,7 @@ def check_random_maze():
 agent = Agent6()
 
 
-def find_the_target():
+def find_the_target(num: int):
     agent.reset()
     target_found = False
 
@@ -64,7 +65,7 @@ def find_the_target():
             break
 
     print('Target Terrain: ', random_maze[target_pos[0]][target_pos[1]])
-    input()
+    # input()
     print("done setting maze and target")
     while not target_found:
         agent.pre_planning()
@@ -96,11 +97,11 @@ def find_the_target():
         # print("Was target found ?", target_found)
         p = 0.0
         for row in range(NUM_ROWS):
-             for col in range(NUM_COLS):
-                 p += agent.maze[row][col].probability_of_containing_target
-                 #print(agent.maze[row][col].probability_of_containing_target)
-        #print("Completed", p)
-        
+            for col in range(NUM_COLS):
+                p += agent.maze[row][col].probability_of_containing_target
+                # print(agent.maze[row][col].probability_of_containing_target)
+        # print("Completed", p)
+
         # print("Total Probability =", p[0] / p[1])
         # if agent.num_cells_processed_while_planning > 200:
         #   break
@@ -112,24 +113,29 @@ def find_the_target():
     return [p, agent.num_examinations, movements, agent.num_astar_calls]
 
 
-# find_the_target()
-n_sim = 2
-total_p = []
-total_examinations = []
-total_movements = []
-total_astar = []
-start_time = time.time()
-for i in range(1, n_sim):
-    total = find_the_target()
-    total_p.append(total[0])
-    total_examinations.append(total[1])
-    total_movements.append(total[2])
-    total_astar.append(total[3])
+if __name__ == "__main__":
+    # find_the_target()
+    total_p = list()
+    total_examinations = list()
+    total_movements = list()
+    total_astar = list()
+    start_time = time.time()
 
-end_time = time.time()
-print("Average Number of movements = ", np.average(total_movements))
-print("Average total probability = ", np.average(total_p))
-print("Average Number of total examinations = ", np.average(total_examinations))
-print("Average Number of Astar calls = ", np.average(total_astar))
-print("total examinations divided by astar calls =", np.average(total_examinations) / np.average(total_astar))
-print(f"Runtime = {end_time - start_time}")
+    n_sim = int(multiprocessing.cpu_count())
+    p = multiprocessing.Pool(processes=n_sim)
+
+    results = p.imap_unordered(find_the_target, range(NUM_ITERATIONS))
+
+    for result in results:
+        total_p.append(result[0])
+        total_examinations.append(result[1])
+        total_movements.append(result[2])
+        total_astar.append(result[3])
+
+    end_time = time.time()
+    print("Average Number of movements = ", np.average(total_movements))
+    print("Average total probability = ", np.average(total_p))
+    print("Average Number of total examinations = ", np.average(total_examinations))
+    print("Average Number of Astar calls = ", np.average(total_astar))
+    print("total examinations divided by astar calls =", np.average(total_examinations) / np.average(total_astar))
+    print(f"Runtime = {end_time - start_time}")

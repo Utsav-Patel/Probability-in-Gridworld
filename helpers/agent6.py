@@ -3,10 +3,9 @@ import numpy as np
 
 from queue import Queue
 
-from constants import NUM_ROWS, NUM_COLS, X, Y, INF, HILLY_FALSE_NEGATIVE_RATE, FLAT_FALSE_NEGATIVE_RATE,\
+from constants import NUM_ROWS, NUM_COLS, X, Y, INF, HILLY_FALSE_NEGATIVE_RATE, FLAT_FALSE_NEGATIVE_RATE, \
     FOREST_FALSE_NEGATIVE_RATE, ZERO_PROBABILITY, ONE_PROBABILITY
-from helpers.helper import check, parent_to_child_dict, compare_fractions, divide_fractions, subtract_fractions,\
-    multiply_fractions, add_fractions
+from helpers.helper import check, parent_to_child_dict, compare_fractions
 
 
 def generate_grid_manually():
@@ -115,7 +114,6 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
         current_path.append(cur_pos)
 
     if cur_pos != goal_pos:
-
         # Change the start node to last unblocked node and backtrack if it is set to any positive integer.
         maze[children[cur_pos][0]][children[cur_pos][1]].is_blocked = True
         # maze[children[cur_pos][0]][children[cur_pos][1]].is_confirmed = True
@@ -167,6 +165,7 @@ def length_of_path_from_source_to_all_nodes(maze: list, start_pos: tuple):
 
     return distance_array
 
+
 def length_of_path_from_source_to_goal(maze_array: np.array, start_pos: tuple, goal_pos: tuple):
     """
     This function will return length of path from source to goal if it exists otherwise it will return INF
@@ -216,12 +215,12 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed):
     least_distance = INF
     distance_array = length_of_path_from_source_to_all_nodes(maze, current_pos)
     # print(distance_array)
-    
+
     sum_probabilities = 0.0
     for row in range(NUM_ROWS):
         for col in range(NUM_COLS):
             sum_probabilities += maze[row][col].probability_of_containing_target
-            
+
     for row in range(NUM_ROWS):
         for col in range(NUM_COLS):
             maze[row][col].probability_of_containing_target /= sum_probabilities
@@ -278,60 +277,29 @@ def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, 
             return False
 
     else:
-        #children = parent_to_child_dict(parents, current_estimated_goal)
-        #p_of_x_y = maze[children[current_pos][0]][children[current_pos][1]].probability_of_containing_target
         p_of_x_y = maze[node[0]][node[1]].probability_of_containing_target
-        #subtract_fractions(ONE_PROBABILITY, p_of_x_y, TEMP_1)
-        TEMP1 = ONE_PROBABILITY - p_of_x_y
-        
+        remaining_probability = ONE_PROBABILITY - p_of_x_y
+
         for row in range(NUM_ROWS):
             for column in range(NUM_COLS):
-                #if (children[current_pos] == (row, column)):
                 if node == (row, column):
                     maze[row][column].probability_of_containing_target = ZERO_PROBABILITY
                 else:
-                    # maze[row][column].probability_of_containing_target[0] = maze[row][column].probability_of_containing_target[0]/maze[row][column].probability_of_containing_target[1]
-                    # maze[row][column].probability_of_containing_target[1] = (1-(p_of_x_y[0]/p_of_x_y[1]))
-                    #maze[row][column].probability_of_containing_target = divide_fractions(
-                    #    maze[row][column].probability_of_containing_target, subtract_fractions(ONE_PROBABILITY, p_of_x_y))
-                    
-                    #divide_fractions(maze[row][column].probability_of_containing_target, TEMP_1, maze[row][column].probability_of_containing_target)
-                    
-                    maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target / TEMP1
+                    maze[row][column].probability_of_containing_target = \
+                        maze[row][column].probability_of_containing_target / remaining_probability
     return False
 
 
 def compute_probability(false_negative_rate, maze, current_pos):
     p_of_x_y = maze[current_pos[0]][current_pos[1]].probability_of_containing_target
-    
-    #multiply_fractions(p_of_x_y, false_negative_rate, TEMP_1)
-    #subtract_fractions(ONE_PROBABILITY, p_of_x_y, TEMP_2)
-    #add_fractions(TEMP_1, TEMP_2, TEMP_3)
-    
-    TEMP_1 = p_of_x_y * false_negative_rate
-    TEMP_2 = ONE_PROBABILITY - p_of_x_y
-    TEMP_3 = TEMP_1 + TEMP_2
-    
+
+    reduced_probability = p_of_x_y * false_negative_rate
+    probability_denominator = ONE_PROBABILITY - p_of_x_y + reduced_probability
+
     for row in range(NUM_ROWS):
         for column in range(NUM_COLS):
-            if (current_pos == (row, column)):
-                # maze[row][column].probability_of_containing_target[0] = (p_of_x_y[0]/p_of_x_y[1])*false_negative_rate
-                # maze[row][column].probability_of_containing_target[1] = (1 - (p_of_x_y[0]/p_of_x_y[1]))+((p_of_x_y[0]/p_of_x_y[1])*false_negative_rate)
-                
-                #maze[row][column].probability_of_containing_target = divide_fractions(
-                #    multiply_fractions(p_of_x_y, false_negative_rate),
-                #    add_fractions(subtract_fractions(ONE_PROBABILITY, p_of_x_y),
-                #                 multiply_fractions(p_of_x_y, false_negative_rate)))
-                
-                #divide_fractions(TEMP_1, TEMP_3, maze[row][column].probability_of_containing_target)
-                maze[row][column].probability_of_containing_target = TEMP_1 / TEMP_3
+            if current_pos == (row, column):
+                maze[row][column].probability_of_containing_target = reduced_probability / probability_denominator
             else:
-                # maze[row][column].probability_of_containing_target[0] = maze[row][column].probability_of_containing_target[0]/maze[row][column].probability_of_containing_target[1]
-                # maze[row][column].probability_of_containing_target[1] = ((1 - (p_of_x_y[0]/p_of_x_y[1]))+((p_of_x_y[0]/p_of_x_y[1])*false_negative_rate))
-                #maze[row][column].probability_of_containing_target = divide_fractions(
-                #    maze[row][column].probability_of_containing_target,
-                #    add_fractions(subtract_fractions(ONE_PROBABILITY, p_of_x_y),
-                #                  multiply_fractions(p_of_x_y, false_negative_rate)))
-                
-                # divide_fractions(maze[row][column].probability_of_containing_target, TEMP_3, maze[row][column].probability_of_containing_target)
-                maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target / TEMP_3
+                maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target \
+                                                                     / probability_denominator
