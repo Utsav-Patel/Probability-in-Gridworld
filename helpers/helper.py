@@ -248,7 +248,7 @@ def length_of_path_from_source_to_goal(maze_array: np.array, start_pos: tuple, g
     return distance_array[goal_pos[0]][goal_pos[1]]
 
 
-def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed):
+def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, agent = 6):
     if num_of_cells_processed < 1:
         return current_pos
 
@@ -263,17 +263,41 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed):
     for row in range(NUM_ROWS):
         for col in range(NUM_COLS):
             sum_probabilities += maze[row][col].probability_of_containing_target
-
-    for row in range(NUM_ROWS):
-        for col in range(NUM_COLS):
-            maze[row][col].probability_of_containing_target /= sum_probabilities
-            if compare_fractions(maze[row][col].probability_of_containing_target, max_p) == 1:
-                max_p = maze[row][col].probability_of_containing_target
-                cells_with_max_p = list()
-                cells_with_max_p.append((row, col))
-            elif compare_fractions(maze[row][col].probability_of_containing_target, max_p) == 0:
-                cells_with_max_p.append((row, col))
-
+    if(agent == 6):
+        for row in range(NUM_ROWS):
+            for col in range(NUM_COLS):
+                maze[row][col].probability_of_containing_target /= sum_probabilities
+                if compare_fractions(maze[row][col].probability_of_containing_target, max_p) == 1:
+                    max_p = maze[row][col].probability_of_containing_target
+                    cells_with_max_p = list()
+                    cells_with_max_p.append((row, col))
+                elif compare_fractions(maze[row][col].probability_of_containing_target, max_p) == 0:
+                    cells_with_max_p.append((row, col))
+                    
+    elif(agent == 7):
+        for row in range(NUM_ROWS):
+            for col in range(NUM_COLS):
+                maze[row][col].probability_of_containing_target /= sum_probabilities
+                x = (1 - maze[row][col].false_negative_rate)*maze[row][col].probability_of_containing_target
+                if compare_fractions(x, max_p) == 1:
+                    max_p = x
+                    cells_with_max_p = list()
+                    cells_with_max_p.append((row, col))
+                elif compare_fractions(x, max_p) == 0:
+                    cells_with_max_p.append((row, col))
+                    
+    elif(agent == 8):
+        for row in range(NUM_ROWS):
+            for col in range(NUM_COLS):
+                maze[row][col].probability_of_containing_target /= sum_probabilities
+                x = maze[row][col].probability_of_containing_target/distance_array[row][col]
+                if compare_fractions(x, max_p) == 1:
+                    max_p = x
+                    cells_with_max_p = list()
+                    cells_with_max_p.append((row, col))
+                elif compare_fractions(x, max_p) == 0:
+                    cells_with_max_p.append((row, col))
+                    
     # print("cells with max p =", cells_with_max_p)
     for item in cells_with_max_p:
         # if (distance_array[item[0]][item[1]] < least_distance) and (distance_array[item[0]][item[1]] != 0):
