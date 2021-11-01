@@ -1,7 +1,7 @@
 # This file contains the constants which is used in the project
 
-NUM_ROWS = 3
-NUM_COLS = 3
+NUM_ROWS = 20
+NUM_COLS = 20
 INF = 1e9
 
 X = [1, 0, -1, 0]

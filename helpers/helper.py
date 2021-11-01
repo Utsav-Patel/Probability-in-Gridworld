@@ -289,6 +289,8 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, ag
     elif(agent == 8):
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
+                if((row,col) == current_pos):
+                    continue
                 maze[row][col].probability_of_containing_target /= sum_probabilities
                 x = maze[row][col].probability_of_containing_target/distance_array[row][col]
                 if compare_fractions(x, max_p) == 1:
