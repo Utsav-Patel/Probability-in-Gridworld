@@ -1,10 +1,10 @@
 import time
 import numpy as np
 
-from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID
+from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, ONE_PROBABILITY, ZERO_PROBABILITY
 from helpers.agent6 import set_random_target, generate_grid_manually, length_of_path_from_source_to_goal, \
     examine_and_propogate_probability
-from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path
+from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path, add_fractions
 from src.Agent6 import Agent6
 
 
@@ -64,7 +64,7 @@ def find_the_target():
             break
 
     print('Target Terrain: ', random_maze[target_pos[0]][target_pos[1]])
-    # input()
+    input()
     print("done setting maze and target")
     while not target_found:
         agent.pre_planning()
@@ -75,7 +75,7 @@ def find_the_target():
             examine_and_propogate_probability(agent.maze, random_maze, agent.current_position, target_pos,
                                               agent.current_estimated_goal, agent.current_estimated_goal)
             agent.pre_planning()
-        print('Found estimated target after this no. of iterations', cnt)
+        # print('Found estimated target after this no. of iterations', cnt)
         # print("Current Estimated Goal =", agent.current_estimated_goal)
         agent.planning(agent.current_estimated_goal)
         # print("Current pos before execution =", agent.current_position)
@@ -94,12 +94,13 @@ def find_the_target():
         # print("Target pos =", target_pos)
         # print("Current pos =", agent.current_position)
         # print("Was target found ?", target_found)
-        p = [0, 1]
-        # for row in range(NUM_ROWS):
-        #     for col in range(NUM_COLS):
-        #         p = add_fractions(p, agent.maze[row][col].probability_of_containing_target)
-                # print(agent.maze[row][col].probability_of_containing_target)
-
+        p = 0.0
+        for row in range(NUM_ROWS):
+             for col in range(NUM_COLS):
+                 p += agent.maze[row][col].probability_of_containing_target
+                 #print(agent.maze[row][col].probability_of_containing_target)
+        #print("Completed", p)
+        
         # print("Total Probability =", p[0] / p[1])
         # if agent.num_cells_processed_while_planning > 200:
         #   break
@@ -108,7 +109,7 @@ def find_the_target():
     movements = compute_explored_cells_from_path(agent.final_paths)
     # print("Number of total examinations = ",agent.num_examinations)
     # print("Number of movements = ", movements)
-    return [p[0] / p[1], agent.num_examinations, movements, agent.num_astar_calls]
+    return [p, agent.num_examinations, movements, agent.num_astar_calls]
 
 
 # find_the_target()

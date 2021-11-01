@@ -4,7 +4,7 @@ import numpy as np
 from queue import Queue
 
 from constants import NUM_ROWS, NUM_COLS, X, Y, INF, HILLY_FALSE_NEGATIVE_RATE, FLAT_FALSE_NEGATIVE_RATE,\
-    FOREST_FALSE_NEGATIVE_RATE
+    FOREST_FALSE_NEGATIVE_RATE, ZERO_PROBABILITY, ONE_PROBABILITY
 from helpers.helper import check, parent_to_child_dict, compare_fractions, divide_fractions, subtract_fractions,\
     multiply_fractions, add_fractions
 
@@ -210,14 +210,21 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed):
     if num_of_cells_processed < 1:
         return current_pos
 
-    max_p = [0, 1]
+    max_p = ZERO_PROBABILITY
     cells_with_max_p = list()
     cells_with_least_d = list()
     least_distance = INF
     distance_array = length_of_path_from_source_to_all_nodes(maze, current_pos)
     # print(distance_array)
+    
+    sum_probabilities = 0.0
     for row in range(NUM_ROWS):
         for col in range(NUM_COLS):
+            sum_probabilities += maze[row][col].probability_of_containing_target
+            
+    for row in range(NUM_ROWS):
+        for col in range(NUM_COLS):
+            maze[row][col].probability_of_containing_target /= sum_probabilities
             if compare_fractions(maze[row][col].probability_of_containing_target, max_p) == 1:
                 max_p = maze[row][col].probability_of_containing_target
                 cells_with_max_p = list()
@@ -274,34 +281,57 @@ def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, 
         #children = parent_to_child_dict(parents, current_estimated_goal)
         #p_of_x_y = maze[children[current_pos][0]][children[current_pos][1]].probability_of_containing_target
         p_of_x_y = maze[node[0]][node[1]].probability_of_containing_target
+        #subtract_fractions(ONE_PROBABILITY, p_of_x_y, TEMP_1)
+        TEMP1 = ONE_PROBABILITY - p_of_x_y
+        
         for row in range(NUM_ROWS):
             for column in range(NUM_COLS):
                 #if (children[current_pos] == (row, column)):
                 if node == (row, column):
-                    maze[row][column].probability_of_containing_target = [0, 1]
+                    maze[row][column].probability_of_containing_target = ZERO_PROBABILITY
                 else:
                     # maze[row][column].probability_of_containing_target[0] = maze[row][column].probability_of_containing_target[0]/maze[row][column].probability_of_containing_target[1]
                     # maze[row][column].probability_of_containing_target[1] = (1-(p_of_x_y[0]/p_of_x_y[1]))
-                    maze[row][column].probability_of_containing_target = divide_fractions(
-                        maze[row][column].probability_of_containing_target, subtract_fractions([1, 1], p_of_x_y))
+                    #maze[row][column].probability_of_containing_target = divide_fractions(
+                    #    maze[row][column].probability_of_containing_target, subtract_fractions(ONE_PROBABILITY, p_of_x_y))
+                    
+                    #divide_fractions(maze[row][column].probability_of_containing_target, TEMP_1, maze[row][column].probability_of_containing_target)
+                    
+                    maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target / TEMP1
     return False
 
 
 def compute_probability(false_negative_rate, maze, current_pos):
     p_of_x_y = maze[current_pos[0]][current_pos[1]].probability_of_containing_target
+    
+    #multiply_fractions(p_of_x_y, false_negative_rate, TEMP_1)
+    #subtract_fractions(ONE_PROBABILITY, p_of_x_y, TEMP_2)
+    #add_fractions(TEMP_1, TEMP_2, TEMP_3)
+    
+    TEMP_1 = p_of_x_y * false_negative_rate
+    TEMP_2 = ONE_PROBABILITY - p_of_x_y
+    TEMP_3 = TEMP_1 + TEMP_2
+    
     for row in range(NUM_ROWS):
         for column in range(NUM_COLS):
             if (current_pos == (row, column)):
                 # maze[row][column].probability_of_containing_target[0] = (p_of_x_y[0]/p_of_x_y[1])*false_negative_rate
                 # maze[row][column].probability_of_containing_target[1] = (1 - (p_of_x_y[0]/p_of_x_y[1]))+((p_of_x_y[0]/p_of_x_y[1])*false_negative_rate)
-                maze[row][column].probability_of_containing_target = divide_fractions(
-                    multiply_fractions(p_of_x_y, false_negative_rate),
-                    add_fractions(subtract_fractions([1, 1], p_of_x_y),
-                                  multiply_fractions(p_of_x_y, false_negative_rate)))
+                
+                #maze[row][column].probability_of_containing_target = divide_fractions(
+                #    multiply_fractions(p_of_x_y, false_negative_rate),
+                #    add_fractions(subtract_fractions(ONE_PROBABILITY, p_of_x_y),
+                #                 multiply_fractions(p_of_x_y, false_negative_rate)))
+                
+                #divide_fractions(TEMP_1, TEMP_3, maze[row][column].probability_of_containing_target)
+                maze[row][column].probability_of_containing_target = TEMP_1 / TEMP_3
             else:
                 # maze[row][column].probability_of_containing_target[0] = maze[row][column].probability_of_containing_target[0]/maze[row][column].probability_of_containing_target[1]
                 # maze[row][column].probability_of_containing_target[1] = ((1 - (p_of_x_y[0]/p_of_x_y[1]))+((p_of_x_y[0]/p_of_x_y[1])*false_negative_rate))
-                maze[row][column].probability_of_containing_target = divide_fractions(
-                    maze[row][column].probability_of_containing_target,
-                    add_fractions(subtract_fractions([1, 1], p_of_x_y),
-                                  multiply_fractions(p_of_x_y, false_negative_rate)))
+                #maze[row][column].probability_of_containing_target = divide_fractions(
+                #    maze[row][column].probability_of_containing_target,
+                #    add_fractions(subtract_fractions(ONE_PROBABILITY, p_of_x_y),
+                #                  multiply_fractions(p_of_x_y, false_negative_rate)))
+                
+                # divide_fractions(maze[row][column].probability_of_containing_target, TEMP_3, maze[row][column].probability_of_containing_target)
+                maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target / TEMP_3

@@ -17,10 +17,14 @@ class Cell:
         # self.is_goal = False
         # self.is_target = False
 
-        self.probability_of_finding_target = [1, NUM_ROWS * NUM_COLS]
-        self.probability_of_containing_target = [1, NUM_ROWS * NUM_COLS]
+        #self.probability_of_finding_target = [1, NUM_ROWS * NUM_COLS]
+        #self.probability_of_containing_target = [1, NUM_ROWS * NUM_COLS]
         self.false_negative_rate = [0, 1]
-
+        
+        self.probability_of_finding_target = 1 / (NUM_ROWS * NUM_COLS)
+        self.probability_of_containing_target = 1 / (NUM_ROWS * NUM_COLS)
+        self.false_negative_rate = 0.0
+        
         self.num_neighbor = 0
         # self.min_hidden_cell_neighbor = INF
         # self.num_confirmed_blocked = 0
@@ -42,9 +46,13 @@ class Cell:
         # self.is_confirmed = False
         # self.is_target = False
 
-        self.probability_of_finding_target = [1, NUM_ROWS * NUM_COLS]
-        self.probability_of_containing_target = [1, NUM_ROWS * NUM_COLS]
-        self.false_negative_rate = 0
+        #self.probability_of_finding_target = [1, NUM_ROWS * NUM_COLS]
+        #self.probability_of_containing_target = [1, NUM_ROWS * NUM_COLS]
+        #self.false_negative_rate = 0
+        
+        self.probability_of_finding_target = 1 / (NUM_ROWS * NUM_COLS)
+        self.probability_of_containing_target = 1 / (NUM_ROWS * NUM_COLS)
+        self.false_negative_rate = 0.0
 
         self.num_neighbor = 0
         # self.min_hidden_cell_neighbor = INF

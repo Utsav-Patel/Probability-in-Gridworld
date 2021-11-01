@@ -81,22 +81,22 @@ def compute_heuristics(maze: list, h_func, goal_pos):
 
 
 def compare_fractions(num_1, num_2):
-    a = num_1[0]
-    b = num_1[1]
-    c = num_2[0]
-    d = num_2[1]
+    #a = num_1[0]
+    #b = num_1[1]
+    #c = num_2[0]
+    #d = num_2[1]
 
-    val = (a * d - b * c) / (b * d)
+    #val = (a * d - b * c) / (b * d)
 
-    if val > 0:
+    if num_1 - num_2 > 0:
         return 1
-    elif val < 0:
+    elif num_1 - num_2 < 0:
         return 2
     else:
         return 0
 
 
-def add_fractions(num_1, num_2):
+def add_fractions(num_1, num_2, num_3):
     a = num_1[0]
     b = num_1[1]
     c = num_2[0]
@@ -105,10 +105,11 @@ def add_fractions(num_1, num_2):
     gcd = math.gcd(a * d + b * c, b * d)
     x = (a * d + b * c) / gcd
     y = b * d / gcd
-    return [int(x), int(y)]
+    
+    num_3[0] = int(x)
+    num_3[1] = int(y)
 
-
-def subtract_fractions(num_1, num_2):
+def subtract_fractions(num_1, num_2, num_3):
     a = num_1[0]
     b = num_1[1]
     c = num_2[0]
@@ -117,10 +118,13 @@ def subtract_fractions(num_1, num_2):
     gcd = math.gcd(a * d - b * c, b * d)
     x = (a * d - b * c) / gcd
     y = b * d / gcd
-    return [int(x), int(y)]
+    
+    num_3[0] = int(x)
+    num_3[1] = int(y)
 
 
-def divide_fractions(num_1, num_2):
+
+def divide_fractions(num_1, num_2, num_3):
     a = num_1[0]
     b = num_1[1]
     c = num_2[0]
@@ -129,10 +133,13 @@ def divide_fractions(num_1, num_2):
     gcd = math.gcd(a * d, c * b)
     x = (a * d) / gcd
     y = (b * c) / gcd
-    return [int(x), int(y)]
+    
+    num_3[0] = int(x)
+    num_3[1] = int(y)
 
 
-def multiply_fractions(num_1, num_2):
+
+def multiply_fractions(num_1, num_2, num_3):
     a = num_1[0]
     b = num_1[1]
     c = num_2[0]
@@ -141,7 +148,10 @@ def multiply_fractions(num_1, num_2):
     gcd = math.gcd(a * c, d * b)
     x = (a * c) / gcd
     y = (b * d) / gcd
-    return [int(x), int(y)]
+    
+    num_3[0] = int(x)
+    num_3[1] = int(y)
+
 
 
 def compute_explored_cells_from_path(paths: list):
