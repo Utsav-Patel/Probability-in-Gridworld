@@ -66,27 +66,13 @@ def manhattan_distance(pos1: tuple, pos2: tuple):
     return distance
 
 
-def compute_heuristics(maze: list, h_func, goal_pos):
-    """
-    Compute Heuristic for the current maze
-    :param maze: maze of type list
-    :param h_func: Heuristic function we want to use
-    :return: None as we are updating in the same maze object
-    """
-
-    for row in range(NUM_ROWS):
-        for col in range(NUM_COLS):
-            if not maze[row][col].is_blocked:
-                maze[row][col].h = h_func((row, col), goal_pos)
-
-
 def compare_fractions(num_1, num_2):
-    #a = num_1[0]
-    #b = num_1[1]
-    #c = num_2[0]
-    #d = num_2[1]
+    # a = num_1[0]
+    # b = num_1[1]
+    # c = num_2[0]
+    # d = num_2[1]
 
-    #val = (a * d - b * c) / (b * d)
+    # val = (a * d - b * c) / (b * d)
 
     if num_1 - num_2 > 0:
         return 1
@@ -105,9 +91,10 @@ def add_fractions(num_1, num_2, num_3):
     gcd = math.gcd(a * d + b * c, b * d)
     x = (a * d + b * c) / gcd
     y = b * d / gcd
-    
+
     num_3[0] = int(x)
     num_3[1] = int(y)
+
 
 def subtract_fractions(num_1, num_2, num_3):
     a = num_1[0]
@@ -118,10 +105,9 @@ def subtract_fractions(num_1, num_2, num_3):
     gcd = math.gcd(a * d - b * c, b * d)
     x = (a * d - b * c) / gcd
     y = b * d / gcd
-    
+
     num_3[0] = int(x)
     num_3[1] = int(y)
-
 
 
 def divide_fractions(num_1, num_2, num_3):
@@ -133,10 +119,9 @@ def divide_fractions(num_1, num_2, num_3):
     gcd = math.gcd(a * d, c * b)
     x = (a * d) / gcd
     y = (b * c) / gcd
-    
+
     num_3[0] = int(x)
     num_3[1] = int(y)
-
 
 
 def multiply_fractions(num_1, num_2, num_3):
@@ -148,10 +133,9 @@ def multiply_fractions(num_1, num_2, num_3):
     gcd = math.gcd(a * c, d * b)
     x = (a * c) / gcd
     y = (b * d) / gcd
-    
+
     num_3[0] = int(x)
     num_3[1] = int(y)
-
 
 
 def compute_explored_cells_from_path(paths: list):

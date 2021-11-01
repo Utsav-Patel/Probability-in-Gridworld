@@ -5,13 +5,13 @@ import numpy as np
 
 from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, X, Y
 from src.Cell import Cell
-from helpers.helper import astar_search, compute_heuristics, manhattan_distance, check
+from helpers.helper import astar_search, check
 from helpers.agent6 import compute_current_estimated_goal
 
 
 # Agent class
 class Agent(ABC):
-    def __init__(self, algorithm: str = 'astar', heuristic_function: str = 'manhattan'):
+    def __init__(self, algorithm: str = 'astar'):
         self.maze = list()
         # self.knowledge_base = list()
         # self.variable_to_constraint_dict = dict()
@@ -26,9 +26,6 @@ class Agent(ABC):
                         cell_list[col].num_neighbor += 1
                         cell_list[col].four_neighbors.append(neighbor)
             self.maze.append(cell_list)
-
-        if heuristic_function == 'manhattan':
-            compute_heuristics(self.maze, manhattan_distance, (NUM_ROWS - 1, NUM_COLS - 1))
 
         # Initialize some variables
         self.algorithm = algorithm
