@@ -1,11 +1,13 @@
 import math
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 from sortedcontainers import SortedSet
 from queue import Queue
 
-from constants import NUM_COLS, NUM_ROWS, X, Y, INF
+
+from constants import NUM_COLS, NUM_ROWS, X, Y, INF, IMG_PATH
 
 
 def check(current_position: tuple):
@@ -263,7 +265,7 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, ag
     for row in range(NUM_ROWS):
         for col in range(NUM_COLS):
             sum_probabilities += maze[row][col].probability_of_containing_target
-    if(agent == 6):
+    if agent == 6:
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
                 maze[row][col].probability_of_containing_target /= sum_probabilities
@@ -274,7 +276,7 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, ag
                 elif compare_fractions(maze[row][col].probability_of_containing_target, max_p) == 0:
                     cells_with_max_p.append((row, col))
                     
-    elif(agent == 7):
+    elif agent == 7:
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
                 maze[row][col].probability_of_containing_target /= sum_probabilities
@@ -286,13 +288,14 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, ag
                 elif compare_fractions(x, max_p) == 0:
                     cells_with_max_p.append((row, col))
                     
-    elif(agent == 8):
+    elif agent == 8:
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
-                if((row,col) == current_pos):
+                if (row, col) == current_pos:
                     continue
                 maze[row][col].probability_of_containing_target /= sum_probabilities
-                x = (1 - maze[row][col].false_negative_rate)*maze[row][col].probability_of_containing_target/distance_array[row][col]
+                x = (1 - maze[row][col].false_negative_rate)*maze[row][col].probability_of_containing_target/\
+                    distance_array[row][col]
                 if compare_fractions(x, max_p) == 1:
                     max_p = x
                     cells_with_max_p = list()
@@ -424,3 +427,12 @@ def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
                         parents[neighbour] = current_node[1]
 
     return parents, num_explored_nodes
+
+
+def plot_boxplot(data: list, title: str, legend: list, filename: str):
+    fig, ax = plt.subplots()
+    bp = ax.boxplot(data, patch_artist=True, notch='True', vert=0)
+    ax.set_yticklabels(legend)
+    plt.title(title)
+    plt.savefig(IMG_PATH + filename)
+    plt.show()

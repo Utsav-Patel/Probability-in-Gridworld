@@ -4,29 +4,28 @@ import multiprocessing
 
 from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS
 from helpers.agent6 import set_random_target, generate_grid_manually, examine_and_propogate_probability
-from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path, add_fractions,\
-    length_of_path_from_source_to_goal
+from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path, add_fractions, \
+    length_of_path_from_source_to_goal, plot_boxplot
 from src.Agent6 import Agent6
 
-
-
 agent = Agent6()
+legends = ['Agent6', 'Agent7', 'Agent8']
 
 
 def find_the_target(num: int):
+    print('Running for:', num)
     agent.reset()
     target_found = False
-    agents = [6,7,8]
+    agents = [6, 7, 8]
     x = list()
-    #cnt = 0
+    # cnt = 0
     while True:
         random_maze = generate_grid_with_probability_p(PROBABILITY_OF_GRID)
         target_pos = set_random_target()
-        while random_maze[target_pos[0]][target_pos[1]] == 1:
+        while random_maze[target_pos[0]][target_pos[1]] != 2:
             target_pos = set_random_target()
         if length_of_path_from_source_to_goal(random_maze, STARTING_POSITION_OF_AGENT, target_pos) != INF:
             break
-
 
     for agent_num in agents:
         agent.reset()
@@ -34,7 +33,7 @@ def find_the_target(num: int):
         while not target_found:
 
             agent.pre_planning(agent_num)
-    
+
             agent.planning(agent.current_estimated_goal)
             while agent.current_estimated_goal not in agent.parents:
                 agent.maze[agent.current_estimated_goal[0]][agent.current_estimated_goal[1]].is_blocked = True
@@ -42,21 +41,20 @@ def find_the_target(num: int):
                                                   agent.current_estimated_goal, agent.current_estimated_goal)
                 agent.pre_planning(agent_num)
                 agent.planning(agent.current_estimated_goal)
-                
+
             agent.execution(random_maze)
-            
+
             target_found = agent.examine(random_maze, target_pos)
-            
+
             p = 0.0
             for row in range(NUM_ROWS):
                 for col in range(NUM_COLS):
                     p += agent.maze[row][col].probability_of_containing_target
-    
-    
-        #print('Total counts', cnt)
+
+        # print('Total counts', cnt)
         movements = compute_explored_cells_from_path(agent.final_paths)
         x.append([p, agent.num_examinations, movements])
-        #return [agent_num,p, agent.num_examinations, movements]
+        # return [agent_num,p, agent.num_examinations, movements]
     return x
 
 
@@ -65,36 +63,45 @@ if __name__ == "__main__":
     total_p_6 = list()
     total_examinations_6 = list()
     total_movements_6 = list()
-    
+    total_cost_6 = list()
+
     total_p_7 = list()
     total_examinations_7 = list()
     total_movements_7 = list()
+    total_cost_7 = list()
 
     total_p_8 = list()
     total_examinations_8 = list()
     total_movements_8 = list()
+    total_cost_8 = list()
 
     start_time = time.time()
 
     n_cores = int(multiprocessing.cpu_count())
 
-    #print('Number of cores', n_cores)
+    # print('Number of cores', n_cores)
     p = multiprocessing.Pool(processes=n_cores)
 
     results = p.imap_unordered(find_the_target, range(NUM_ITERATIONS))
 
     for result in results:
-        #print(result)
+        # print(result)
         total_p_6.append(result[0][0])
         total_examinations_6.append(result[0][1])
         total_movements_6.append(result[0][2])
+        total_cost_6.append(total_examinations_6[-1] + total_movements_6[-1])
+
         total_p_7.append(result[1][0])
         total_examinations_7.append(result[1][1])
         total_movements_7.append(result[1][2])
+        total_cost_7.append(total_examinations_7[-1] + total_movements_7[-1])
+
         total_p_8.append(result[2][0])
         total_examinations_8.append(result[2][1])
         total_movements_8.append(result[2][2])
+        total_cost_8.append(total_examinations_8[-1] + total_movements_8[-1])
 
+    plot_boxplot([total_cost_6, total_cost_7, total_cost_8], 'boxplot for total cost', legends, 'total_cost.png')
 
     end_time = time.time()
     print("Average Number of movements of agent 6 = ", np.average(total_movements_6))
