@@ -1,6 +1,7 @@
 import time
 import numpy as np
 import multiprocessing
+from datetime import datetime
 
 from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS
 from helpers.agent6 import set_random_target, generate_grid_manually, examine_and_propogate_probability
@@ -28,6 +29,11 @@ def find_the_target(num: int):
             break
 
     for agent_num in agents:
+        print('Starting agent', agent_num)
+        now = datetime.now()
+        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+        print("date and time =", dt_string)
+
         agent.reset()
         target_found = False
         while not target_found:
@@ -55,6 +61,11 @@ def find_the_target(num: int):
         movements = compute_explored_cells_from_path(agent.final_paths)
         x.append([p, agent.num_examinations, movements])
         # return [agent_num,p, agent.num_examinations, movements]
+
+        print('ending agent', agent_num)
+        now = datetime.now()
+        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+        print("date and time =", dt_string)
     return x
 
 
