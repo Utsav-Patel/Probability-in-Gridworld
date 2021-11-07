@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from constants import X, Y, NUM_ROWS, NUM_COLS
+from constants import X, Y
 from helpers.helper import check
 
 

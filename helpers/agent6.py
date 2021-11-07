@@ -1,9 +1,7 @@
-import random
 import numpy as np
 
-from constants import NUM_ROWS, NUM_COLS, X, Y, INF, HILLY_FALSE_NEGATIVE_RATE, FLAT_FALSE_NEGATIVE_RATE, \
-    FOREST_FALSE_NEGATIVE_RATE, ZERO_PROBABILITY, ONE_PROBABILITY
-from helpers.helper import check, parent_to_child_dict, compare_fractions
+from constants import NUM_ROWS, NUM_COLS
+from helpers.helper import parent_to_child_dict, update_status
 
 
 def generate_grid_manually():
@@ -59,19 +57,7 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
 
         # maze[cur_pos[0]][cur_pos[1]].is_confirmed = True
 
-        if maze_array[cur_pos[0]][cur_pos[1]] == 1:
-            maze[cur_pos[0]][cur_pos[1]].is_blocked = True
-        elif maze_array[cur_pos[0]][cur_pos[1]] == 2:
-            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = FLAT_FALSE_NEGATIVE_RATE
-            maze[cur_pos[0]][cur_pos[1]].is_blocked = False
-        elif maze_array[cur_pos[0]][cur_pos[1]] == 3:
-            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = HILLY_FALSE_NEGATIVE_RATE
-            maze[cur_pos[0]][cur_pos[1]].is_blocked = False
-        elif maze_array[cur_pos[0]][cur_pos[1]] == 4:
-            maze[cur_pos[0]][cur_pos[1]].false_negative_rate = FOREST_FALSE_NEGATIVE_RATE
-            maze[cur_pos[0]][cur_pos[1]].is_blocked = False
-        else:
-            raise Exception("Invalid value in maze_array")
+        update_status(maze, maze_array, cur_pos)
 
         # Explore the field of view and update the blocked nodes if there's any in the path.
         # if want_to_explore_field_of_view:

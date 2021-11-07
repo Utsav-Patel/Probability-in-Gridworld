@@ -4,7 +4,6 @@ import multiprocessing
 from datetime import datetime
 
 from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS
-from helpers.agent6 import generate_grid_manually
 from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path, \
     length_of_path_from_source_to_goal, examine_and_propagate_probability, plot_boxplot, generate_target_position
 from src.Agent6 import Agent6
@@ -16,7 +15,6 @@ legends = ['Agent6', 'Agent7', 'Agent8']
 def find_the_target(num: int):
     print('Running for:', num)
     agent.reset()
-    target_found = False
     agents = [6, 7, 8]
     x = list()
     # cnt = 0

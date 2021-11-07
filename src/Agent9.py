@@ -1,6 +1,6 @@
 import numpy as np
 
-from constants import STARTING_POSITION_OF_AGENT, NUM_COLS, NUM_ROWS, ZERO_PROBABILITY, ONE_PROBABILITY
+from constants import NUM_COLS, NUM_ROWS, ZERO_PROBABILITY, ONE_PROBABILITY
 from src.Agent import Agent
 from helpers.helper import examine_and_propagate_probability, parent_to_child_dict, update_status
 
