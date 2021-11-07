@@ -18,13 +18,13 @@ class Agent9(Agent):
                 self.is_target_in_neighbors = True
 
         if self.is_target_in_neighbors:
-            print('Target found in neighbors')
+            # print('Target found in neighbors')
             sensed_neighbor_probability = ZERO_PROBABILITY
             for neighbor in self.maze[self.current_position[0]][self.current_position[1]].eight_neighbors:
                 sensed_neighbor_probability += \
                     self.maze[neighbor[0]][neighbor[1]].probability_of_containing_target_next_step
 
-            print('Sensed probability', sensed_neighbor_probability)
+            # print('Sensed probability', sensed_neighbor_probability)
             assert ZERO_PROBABILITY < sensed_neighbor_probability <= ONE_PROBABILITY + 1e-5
 
             for row in range(NUM_ROWS):
@@ -36,13 +36,13 @@ class Agent9(Agent):
                         self.maze[row][col].probability_of_containing_target = ZERO_PROBABILITY
                     self.maze[row][col].probability_of_containing_target_next_step = ZERO_PROBABILITY
         else:
-            print('Target not found in neighbors')
+            # print('Target not found in neighbors')
             sensed_neighbor_probability = ZERO_PROBABILITY
             for neighbor in self.maze[self.current_position[0]][self.current_position[1]].eight_neighbors:
                 sensed_neighbor_probability += \
                     self.maze[neighbor[0]][neighbor[1]].probability_of_containing_target_next_step
 
-            print('Sensed probability', sensed_neighbor_probability)
+            # print('Sensed probability', sensed_neighbor_probability)
             assert ZERO_PROBABILITY <= sensed_neighbor_probability < ONE_PROBABILITY
 
             for row in range(NUM_ROWS):

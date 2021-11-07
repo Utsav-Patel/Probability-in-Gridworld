@@ -1,15 +1,19 @@
 from datetime import datetime
+import multiprocessing
+import numpy as np
+
 from helpers.helper import generate_grid_with_probability_p, length_of_path_from_source_to_goal,\
     generate_target_position, examine_and_propagate_probability, compute_explored_cells_from_path
 from helpers.agent9 import move_target
-from constants import PROBABILITY_OF_GRID, STARTING_POSITION_OF_AGENT, INF, NUM_ROWS, NUM_COLS
+from constants import PROBABILITY_OF_GRID, STARTING_POSITION_OF_AGENT, INF, NUM_ROWS, NUM_COLS, NUM_ITERATIONS
 from src.Agent9 import Agent9
 
-agent = Agent9()
-agent_num = 9
 
+def find_moving_target(num: int):
 
-def find_moving_target():
+    print('Running for', num)
+    agent = Agent9()
+    agent_num = 9
     agent.reset()
     while True:
         full_maze = generate_grid_with_probability_p(PROBABILITY_OF_GRID)
@@ -17,16 +21,16 @@ def find_moving_target():
         if length_of_path_from_source_to_goal(full_maze, STARTING_POSITION_OF_AGENT, target_position) != INF:
             break
 
-    print('Starting agent', agent_num)
-    now = datetime.now()
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-    print("date and time =", dt_string)
+    # print('Starting agent', agent_num)
+    # now = datetime.now()
+    # dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    # print("date and time =", dt_string)
 
     agent.reset()
     target_found = False
 
-    print('Original Maze')
-    print(full_maze)
+    # print('Original Maze')
+    # print(full_maze)
 
     # for row in range(NUM_ROWS):
     #     for col in range(NUM_COLS):
@@ -35,8 +39,8 @@ def find_moving_target():
 
     while not target_found:
 
-        print('Agent current position', agent.current_position)
-        print('Target current position', target_position)
+        # print('Agent current position', agent.current_position)
+        # print('Target current position', target_position)
 
         agent.sense(target_position)
         agent.pre_planning(agent_num)
@@ -74,8 +78,8 @@ def find_moving_target():
         #         print(format(agent.maze[row][col].probability_of_containing_target_next_step, ".5f"), end=" ")
         #     print()
 
-        print('Total probability', p)
-        print('Total probability next', p_next)
+        # print('Total probability', p)
+        # print('Total probability next', p_next)
 
         # input()
 
@@ -84,14 +88,45 @@ def find_moving_target():
     # x.append([p, agent.num_examinations, movements])
     # return [agent_num,p, agent.num_examinations, movements]
 
-    print('Number of examinations', agent.num_examinations)
-    print('Number of movements', movements)
+    # print('Number of examinations', agent.num_examinations)
+    # print('Number of movements', movements)
+    #
+    # print('Total costs', agent.num_examinations + movements)
+    #
+    # print('ending agent', agent_num)
+    # now = datetime.now()
+    # dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    # print("date and time =", dt_string)
 
-    print('Total costs', agent.num_examinations + movements)
+    return agent.num_examinations, movements, agent.num_examinations + movements
 
-    print('ending agent', agent_num)
-    now = datetime.now()
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-    print("date and time =", dt_string)
 
-find_moving_target()
+if __name__ == "__main__":
+
+    total_examinations = list()
+    total_movements = list()
+    total_cost = list()
+
+    start_time = datetime.now()
+
+    n_cores = int(multiprocessing.cpu_count())
+
+    # print('Number of cores', n_cores)
+    p = multiprocessing.Pool(processes=n_cores)
+
+    results = p.imap_unordered(find_moving_target, range(NUM_ITERATIONS))
+
+    for result in results:
+        # print(result)
+        total_examinations.append(result[0])
+        total_movements.append(result[1])
+        total_cost.append(result[2])
+
+    # plot_boxplot([total_cost_6, total_cost_7, total_cost_8], 'boxplot for total cost', legends, 'total_cost.png')
+
+    end_time = datetime.now()
+    print("Average Number of movements of agent 9 = ", np.average(total_movements))
+    # print("Average total probability of agent 9 = ", np.average(total_p_6))
+    print("Average Number of total examinations of agent 9= ", np.average(total_examinations))
+    print("Average cost of agent 9 = ", np.average(total_cost))
+    print(f"Runtime = {end_time - start_time}")
