@@ -86,62 +86,6 @@ def compare_fractions(num_1, num_2):
         return 0
 
 
-def add_fractions(num_1, num_2, num_3):
-    a = num_1[0]
-    b = num_1[1]
-    c = num_2[0]
-    d = num_2[1]
-
-    gcd = math.gcd(a * d + b * c, b * d)
-    x = (a * d + b * c) / gcd
-    y = b * d / gcd
-
-    num_3[0] = int(x)
-    num_3[1] = int(y)
-
-
-def subtract_fractions(num_1, num_2, num_3):
-    a = num_1[0]
-    b = num_1[1]
-    c = num_2[0]
-    d = num_2[1]
-
-    gcd = math.gcd(a * d - b * c, b * d)
-    x = (a * d - b * c) / gcd
-    y = b * d / gcd
-
-    num_3[0] = int(x)
-    num_3[1] = int(y)
-
-
-def divide_fractions(num_1, num_2, num_3):
-    a = num_1[0]
-    b = num_1[1]
-    c = num_2[0]
-    d = num_2[1]
-
-    gcd = math.gcd(a * d, c * b)
-    x = (a * d) / gcd
-    y = (b * c) / gcd
-
-    num_3[0] = int(x)
-    num_3[1] = int(y)
-
-
-def multiply_fractions(num_1, num_2, num_3):
-    a = num_1[0]
-    b = num_1[1]
-    c = num_2[0]
-    d = num_2[1]
-
-    gcd = math.gcd(a * c, d * b)
-    x = (a * c) / gcd
-    y = (b * d) / gcd
-
-    num_3[0] = int(x)
-    num_3[1] = int(y)
-
-
 def compute_explored_cells_from_path(paths: list):
     """
     This function will compute the trajectory length from the list of paths returned by any repeated forward algorithm
@@ -457,6 +401,21 @@ def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
     return parents, num_explored_nodes
 
 
+def compute_probability(maze, current_pos):
+    p_of_x_y = maze[current_pos[0]][current_pos[1]].probability_of_containing_target
+
+    reduced_probability = p_of_x_y * maze[current_pos[0]][current_pos[1]].false_negative_rate
+    probability_denominator = ONE_PROBABILITY - p_of_x_y + reduced_probability
+
+    for row in range(NUM_ROWS):
+        for column in range(NUM_COLS):
+            if current_pos == (row, column):
+                maze[row][column].probability_of_containing_target = reduced_probability / probability_denominator
+            else:
+                maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target\
+                                                                     / probability_denominator
+
+
 def check_and_propagate_probability(maze, full_maze, current_pos, target_pos):
     if current_pos == target_pos:
         if full_maze[current_pos[0]][current_pos[1]] == 2:
@@ -504,21 +463,6 @@ def examine_and_propagate_probability(maze, full_maze, current_pos, target_pos, 
         return False
     else:
         return check_and_propagate_probability(maze, full_maze, node, target_pos)
-
-
-def compute_probability(maze, current_pos):
-    p_of_x_y = maze[current_pos[0]][current_pos[1]].probability_of_containing_target
-
-    reduced_probability = p_of_x_y * maze[current_pos[0]][current_pos[1]].false_negative_rate
-    probability_denominator = ONE_PROBABILITY - p_of_x_y + reduced_probability
-
-    for row in range(NUM_ROWS):
-        for column in range(NUM_COLS):
-            if current_pos == (row, column):
-                maze[row][column].probability_of_containing_target = reduced_probability / probability_denominator
-            else:
-                maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target \
-                                                                     / probability_denominator
 
 
 def update_status(maze: list, maze_array: np.array, cur_pos: tuple):
