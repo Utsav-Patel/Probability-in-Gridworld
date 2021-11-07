@@ -23,8 +23,15 @@ class Agent(ABC):
                 for ind in range(len(X)):
                     neighbor = (row + X[ind], col + Y[ind])
                     if check(neighbor):
-                        cell_list[col].num_neighbor += 1
+                        # cell_list[col].num_neighbor += 1
                         cell_list[col].four_neighbors.append(neighbor)
+                for ind in range(-1, 2):
+                    for ind2 in range(-1, 2):
+                        neighbor = (row + ind, col + ind2)
+                        if neighbor == (row, col):
+                            continue
+                        if check(neighbor):
+                            cell_list[col].eight_neighbors.append(neighbor)
             self.maze.append(cell_list)
 
         # Initialize some variables
@@ -46,7 +53,7 @@ class Agent(ABC):
 
         self.num_examinations = 0
 
-    def pre_planning(self, agent_num = 6):
+    def pre_planning(self, agent_num=6):
         self.current_estimated_goal = compute_current_estimated_goal(self.maze, self.current_position,
                                                                      self.num_cells_processed_while_planning, agent_num)
 
@@ -86,5 +93,5 @@ class Agent(ABC):
         self.num_examinations = 0
 
     @abstractmethod
-    def execution(self, full_maze: np.array):
+    def execution(self, full_maze: np.array, target_pos: tuple = None):
         pass

@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 from sortedcontainers import SortedSet
 from queue import Queue
 
-
-from constants import NUM_COLS, NUM_ROWS, X, Y, INF, IMG_PATH
+from constants import NUM_COLS, NUM_ROWS, X, Y, INF, IMG_PATH, ONE_PROBABILITY, ZERO_PROBABILITY,\
+    FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE
 
 
 def check(current_position: tuple):
@@ -177,6 +177,15 @@ def parent_to_child_dict(parent: dict, starting_position: tuple):
     return child
 
 
+def generate_target_position(full_maze: list):
+    while True:
+        x = random.randint(0, len(full_maze) - 1)
+        y = random.randint(0, len(full_maze) - 1)
+        if full_maze[x][y] == 1:
+            continue
+        return x, y
+
+
 def length_of_path_from_source_to_all_nodes(maze: list, start_pos: tuple):
     """
     This function will return length of path from source to goal if it exists otherwise it will return INF
@@ -250,7 +259,7 @@ def length_of_path_from_source_to_goal(maze_array: np.array, start_pos: tuple, g
     return distance_array[goal_pos[0]][goal_pos[1]]
 
 
-def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, agent = 6):
+def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, agent=6):
     if num_of_cells_processed < 1:
         return current_pos
 
@@ -262,9 +271,13 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, ag
     # print(distance_array)
 
     sum_probabilities = 0.0
+    sum_probabilities_next_step = 0.0
+
     for row in range(NUM_ROWS):
         for col in range(NUM_COLS):
             sum_probabilities += maze[row][col].probability_of_containing_target
+            sum_probabilities_next_step += maze[row][col].probability_of_containing_target_next_step
+
     if agent == 6:
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
@@ -275,26 +288,26 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, ag
                     cells_with_max_p.append((row, col))
                 elif compare_fractions(maze[row][col].probability_of_containing_target, max_p) == 0:
                     cells_with_max_p.append((row, col))
-                    
+
     elif agent == 7:
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
                 maze[row][col].probability_of_containing_target /= sum_probabilities
-                x = (1 - maze[row][col].false_negative_rate)*maze[row][col].probability_of_containing_target
+                x = (1 - maze[row][col].false_negative_rate) * maze[row][col].probability_of_containing_target
                 if compare_fractions(x, max_p) == 1:
                     max_p = x
                     cells_with_max_p = list()
                     cells_with_max_p.append((row, col))
                 elif compare_fractions(x, max_p) == 0:
                     cells_with_max_p.append((row, col))
-                    
+
     elif agent == 8:
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
                 if (row, col) == current_pos:
                     continue
                 maze[row][col].probability_of_containing_target /= sum_probabilities
-                x = (1 - maze[row][col].false_negative_rate)*maze[row][col].probability_of_containing_target/\
+                x = (1 - maze[row][col].false_negative_rate) * maze[row][col].probability_of_containing_target / \
                     distance_array[row][col]
                 if compare_fractions(x, max_p) == 1:
                     max_p = x
@@ -302,7 +315,22 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, ag
                     cells_with_max_p.append((row, col))
                 elif compare_fractions(x, max_p) == 0:
                     cells_with_max_p.append((row, col))
-                    
+
+    elif agent == 9:
+        for row in range(NUM_ROWS):
+            for col in range(NUM_COLS):
+                if (row, col) == current_pos:
+                    continue
+                maze[row][col].probability_of_containing_target_next_step /= sum_probabilities_next_step
+                # (1 - maze[row][col].false_negative_rate) *
+                x = maze[row][col].probability_of_containing_target_next_step / distance_array[row][col]
+                if compare_fractions(x, max_p) == 1:
+                    max_p = x
+                    cells_with_max_p = list()
+                    cells_with_max_p.append((row, col))
+                elif compare_fractions(x, max_p) == 0:
+                    cells_with_max_p.append((row, col))
+
     # print("cells with max p =", cells_with_max_p)
     for item in cells_with_max_p:
         # if (distance_array[item[0]][item[1]] < least_distance) and (distance_array[item[0]][item[1]] != 0):
@@ -427,6 +455,86 @@ def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
                         parents[neighbour] = current_node[1]
 
     return parents, num_explored_nodes
+
+
+def check_and_propagate_probability(maze, full_maze, current_pos, target_pos):
+    if current_pos == target_pos:
+        if full_maze[current_pos[0]][current_pos[1]] == 2:
+            assert maze[current_pos[0]][current_pos[1]].false_negative_rate == 0.2
+            x = random.randint(0, 99)
+            if x < 20:
+                compute_probability(maze, current_pos)
+            else:
+                return True
+        elif full_maze[current_pos[0]][current_pos[1]] == 3:
+            assert maze[current_pos[0]][current_pos[1]].false_negative_rate == 0.5
+            x = random.randint(0, 99)
+            if x < 50:
+                compute_probability(maze, current_pos)
+            else:
+                return True
+        elif full_maze[current_pos[0]][current_pos[1]] == 4:
+            assert maze[current_pos[0]][current_pos[1]].false_negative_rate == 0.8
+            x = random.randint(0, 99)
+            if x < 80:
+                compute_probability(maze, current_pos)
+            else:
+                return True
+    else:
+        compute_probability(maze, current_pos)
+
+    return False
+
+
+def examine_and_propagate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, node):
+    if current_pos == current_estimated_goal:
+        return check_and_propagate_probability(maze, full_maze, current_pos, target_pos)
+
+    elif maze[node[0]][node[1]].is_blocked:
+        p_of_x_y = maze[node[0]][node[1]].probability_of_containing_target
+        remaining_probability = ONE_PROBABILITY - p_of_x_y
+
+        for row in range(NUM_ROWS):
+            for column in range(NUM_COLS):
+                if node == (row, column):
+                    maze[row][column].probability_of_containing_target = ZERO_PROBABILITY
+                else:
+                    maze[row][column].probability_of_containing_target = \
+                        maze[row][column].probability_of_containing_target / remaining_probability
+        return False
+    else:
+        return check_and_propagate_probability(maze, full_maze, node, target_pos)
+
+
+def compute_probability(maze, current_pos):
+    p_of_x_y = maze[current_pos[0]][current_pos[1]].probability_of_containing_target
+
+    reduced_probability = p_of_x_y * maze[current_pos[0]][current_pos[1]].false_negative_rate
+    probability_denominator = ONE_PROBABILITY - p_of_x_y + reduced_probability
+
+    for row in range(NUM_ROWS):
+        for column in range(NUM_COLS):
+            if current_pos == (row, column):
+                maze[row][column].probability_of_containing_target = reduced_probability / probability_denominator
+            else:
+                maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target \
+                                                                     / probability_denominator
+
+
+def update_status(maze: list, maze_array: np.array, cur_pos: tuple):
+    if maze_array[cur_pos[0]][cur_pos[1]] == 1:
+        maze[cur_pos[0]][cur_pos[1]].is_blocked = True
+    elif maze_array[cur_pos[0]][cur_pos[1]] == 2:
+        maze[cur_pos[0]][cur_pos[1]].false_negative_rate = FLAT_FALSE_NEGATIVE_RATE
+        maze[cur_pos[0]][cur_pos[1]].is_blocked = False
+    elif maze_array[cur_pos[0]][cur_pos[1]] == 3:
+        maze[cur_pos[0]][cur_pos[1]].false_negative_rate = HILLY_FALSE_NEGATIVE_RATE
+        maze[cur_pos[0]][cur_pos[1]].is_blocked = False
+    elif maze_array[cur_pos[0]][cur_pos[1]] == 4:
+        maze[cur_pos[0]][cur_pos[1]].false_negative_rate = FOREST_FALSE_NEGATIVE_RATE
+        maze[cur_pos[0]][cur_pos[1]].is_blocked = False
+    else:
+        raise Exception("Invalid value in maze_array")
 
 
 def plot_boxplot(data: list, title: str, legend: list, filename: str):
