@@ -3,7 +3,8 @@ import numpy as np
 
 from constants import NUM_ROWS, NUM_COLS, INF, HILLY_FALSE_NEGATIVE_RATE, FLAT_FALSE_NEGATIVE_RATE, \
     FOREST_FALSE_NEGATIVE_RATE, ZERO_PROBABILITY, ONE_PROBABILITY
-from helpers.helper import parent_to_child_dict, length_of_path_from_source_to_all_nodes, compare_fractions
+from helpers.helper import parent_to_child_dict, length_of_path_from_source_to_all_nodes, compare_fractions, \
+    examine_and_propagate_probability
 
 
 def set_random_target():
@@ -82,57 +83,57 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, ag
         # print(cells_with_least_d[0])
         return cells_with_least_d[0]
 
-
-def examine_and_propagate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, node):
-    # check if current position of Agent is current_estimated_goal
-    if current_pos == current_estimated_goal:
-        # check is current_estimates_goal is the target itself or not
-        if current_pos == target_pos:
-            if full_maze[current_pos[0]][current_pos[1]] == 2:  # for flat terrain
-                x = random.randint(0, 99)  # generate random number between 0 and 99
-                if x < 20:  # compute probability if random number < 20
-                    compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
-                else:
-                    # if random number >20 and current_estimated_goal is target then return True as target is found
-                    return True
-            elif full_maze[current_pos[0]][current_pos[1]] == 3:  # for hilly terrain
-                x = random.randint(0, 99)  # generate random number between 0 and 99
-                if x < 50:  # compute probability if random number < 50
-                    compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
-                else:
-                    # if random number >50 and current_estimated_goal is target then return True as target is found
-                    return True
-            elif full_maze[current_pos[0]][current_pos[1]] == 4:  # for forest terrain
-                x = random.randint(0, 99)  # generate random number between 0 and 99
-                if x < 80:  # compute probability if random number < 80
-                    compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
-                else:
-                    # if random number >80 and current_estimated_goal is target then return True as target is found
-                    return True
-
-        # when current_estimated_goal doesn't contains target
-        else:
-            # propagate the probability
-            compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
-            # return false as target is not found
-            return False
-
-    # else block executed when node is blocked.
-    elif maze[node[0]][node[1]].is_blocked:
-        p_of_x_y = maze[node[0]][node[1]].probability_of_containing_target
-        remaining_probability = ONE_PROBABILITY - p_of_x_y
-        print("In probability calculation", node, p_of_x_y, end=" ")
-        for row in range(NUM_ROWS):
-            for column in range(NUM_COLS):
-                if node == (row, column):
-                    maze[row][column].probability_of_containing_target = ZERO_PROBABILITY
-                else:
-                    maze[row][column].probability_of_containing_target = \
-                        maze[row][column].probability_of_containing_target / remaining_probability
-
-    else:
-        compute_probability(maze[node[0]][node[1]].false_negative_rate, maze, node)
-    return False
+#
+# def examine_and_propagate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, node):
+#     # check if current position of Agent is current_estimated_goal
+#     if current_pos == current_estimated_goal:
+#         # check is current_estimates_goal is the target itself or not
+#         if current_pos == target_pos:
+#             if full_maze[current_pos[0]][current_pos[1]] == 2:  # for flat terrain
+#                 x = random.randint(0, 99)  # generate random number between 0 and 99
+#                 if x < 20:  # compute probability if random number < 20
+#                     compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
+#                 else:
+#                     # if random number >20 and current_estimated_goal is target then return True as target is found
+#                     return True
+#             elif full_maze[current_pos[0]][current_pos[1]] == 3:  # for hilly terrain
+#                 x = random.randint(0, 99)  # generate random number between 0 and 99
+#                 if x < 50:  # compute probability if random number < 50
+#                     compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
+#                 else:
+#                     # if random number >50 and current_estimated_goal is target then return True as target is found
+#                     return True
+#             elif full_maze[current_pos[0]][current_pos[1]] == 4:  # for forest terrain
+#                 x = random.randint(0, 99)  # generate random number between 0 and 99
+#                 if x < 80:  # compute probability if random number < 80
+#                     compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
+#                 else:
+#                     # if random number >80 and current_estimated_goal is target then return True as target is found
+#                     return True
+#
+#         # when current_estimated_goal doesn't contains target
+#         else:
+#             # propagate the probability
+#             compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
+#             # return false as target is not found
+#             return False
+#
+#     # else block executed when node is blocked.
+#     elif maze[node[0]][node[1]].is_blocked:
+#         p_of_x_y = maze[node[0]][node[1]].probability_of_containing_target
+#         remaining_probability = ONE_PROBABILITY - p_of_x_y
+#         print("In probability calculation", node, p_of_x_y, end=" ")
+#         for row in range(NUM_ROWS):
+#             for column in range(NUM_COLS):
+#                 if node == (row, column):
+#                     maze[row][column].probability_of_containing_target = ZERO_PROBABILITY
+#                 else:
+#                     maze[row][column].probability_of_containing_target = \
+#                         maze[row][column].probability_of_containing_target / remaining_probability
+#
+#     else:
+#         compute_probability(maze[node[0]][node[1]].false_negative_rate, maze, node)
+#     return False
 
 
 def compute_probability(false_negative_rate, maze, current_pos):
