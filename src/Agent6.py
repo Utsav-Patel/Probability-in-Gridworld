@@ -1,8 +1,9 @@
 
 import numpy as np
 
-from helpers.agent6 import forward_execution, examine_and_propogate_probability, parent_to_child_dict
+from helpers.agent6 import forward_execution, parent_to_child_dict
 from src.Agent import Agent
+from helpers.helper import examine_and_propagate_probability
 
 
 # Blindfolded agent's class
@@ -11,7 +12,7 @@ class Agent6(Agent):
         super().__init__()
 
     # Override execution method of Agent class
-    def execution(self, full_maze: np.array):
+    def execution(self, full_maze: np.array, target_pos: tuple = None):
         self.num_astar_calls += 1
         self.num_bumps += 1
         current_path, num_backtracks = forward_execution(self.maze, full_maze, self.current_position,
@@ -22,7 +23,7 @@ class Agent6(Agent):
 
     def examine(self, full_maze: np.array, target_pos):
         children = parent_to_child_dict(self.parents, self.current_estimated_goal)
-        value = examine_and_propogate_probability(self.maze, full_maze, self.current_position, target_pos,
+        value = examine_and_propagate_probability(self.maze, full_maze, self.current_position, target_pos,
                                                   self.current_estimated_goal, children[self.current_position])
         self.num_examinations += 1
         return value

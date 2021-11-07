@@ -4,9 +4,9 @@ import multiprocessing
 from datetime import datetime
 
 from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS
-from helpers.agent6 import set_random_target, generate_grid_manually, examine_and_propogate_probability
-from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path, add_fractions, \
-    length_of_path_from_source_to_goal, plot_boxplot
+from helpers.agent6 import generate_grid_manually
+from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path, \
+    length_of_path_from_source_to_goal, examine_and_propagate_probability, plot_boxplot, generate_target_position
 from src.Agent6 import Agent6
 
 agent = Agent6()
@@ -22,9 +22,7 @@ def find_the_target(num: int):
     # cnt = 0
     while True:
         random_maze = generate_grid_with_probability_p(PROBABILITY_OF_GRID)
-        target_pos = set_random_target()
-        while random_maze[target_pos[0]][target_pos[1]] != 2:
-            target_pos = set_random_target()
+        target_pos = generate_target_position(random_maze)
         if length_of_path_from_source_to_goal(random_maze, STARTING_POSITION_OF_AGENT, target_pos) != INF:
             break
 
@@ -43,7 +41,7 @@ def find_the_target(num: int):
             agent.planning(agent.current_estimated_goal)
             while agent.current_estimated_goal not in agent.parents:
                 agent.maze[agent.current_estimated_goal[0]][agent.current_estimated_goal[1]].is_blocked = True
-                examine_and_propogate_probability(agent.maze, random_maze, agent.current_position, target_pos,
+                examine_and_propagate_probability(agent.maze, random_maze, agent.current_position, target_pos,
                                                   agent.current_estimated_goal, agent.current_estimated_goal)
                 agent.pre_planning(agent_num)
                 agent.planning(agent.current_estimated_goal)

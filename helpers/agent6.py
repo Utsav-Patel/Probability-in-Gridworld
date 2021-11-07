@@ -25,12 +25,6 @@ def generate_grid_manually():
     return array
 
 
-def set_random_target():
-    x_pos = random.randint(0, NUM_ROWS - 1)
-    y_pos = random.randint(0, NUM_COLS - 1)
-    return x_pos, y_pos
-
-
 def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_pos: tuple, parents: dict):
     """
     This is the repeated forward function which can be used with any algorithm (astar or bfs). This function will
@@ -127,58 +121,3 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
         #         current_path.append(cur_pos)
 
     return current_path, num_backtracks
-
-
-def examine_and_propogate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, node):
-    if current_pos == current_estimated_goal:
-        if current_pos == target_pos:
-            if full_maze[current_pos[0]][current_pos[1]] == 2:
-                x = random.randint(0, 99)
-                if x < 20:
-                    compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
-                else:
-                    return True
-            elif full_maze[current_pos[0]][current_pos[1]] == 3:
-                x = random.randint(0, 99)
-                if x < 50:
-                    compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
-                else:
-                    return True
-            elif full_maze[current_pos[0]][current_pos[1]] == 4:
-                x = random.randint(0, 99)
-                if x < 80:
-                    compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
-                else:
-                    return True
-        else:
-            compute_probability(maze[current_pos[0]][current_pos[1]].false_negative_rate, maze, current_pos)
-
-            return False
-
-    else:
-        p_of_x_y = maze[node[0]][node[1]].probability_of_containing_target
-        remaining_probability = ONE_PROBABILITY - p_of_x_y
-
-        for row in range(NUM_ROWS):
-            for column in range(NUM_COLS):
-                if node == (row, column):
-                    maze[row][column].probability_of_containing_target = ZERO_PROBABILITY
-                else:
-                    maze[row][column].probability_of_containing_target = \
-                        maze[row][column].probability_of_containing_target / remaining_probability
-    return False
-
-
-def compute_probability(false_negative_rate, maze, current_pos):
-    p_of_x_y = maze[current_pos[0]][current_pos[1]].probability_of_containing_target
-
-    reduced_probability = p_of_x_y * false_negative_rate
-    probability_denominator = ONE_PROBABILITY - p_of_x_y + reduced_probability
-
-    for row in range(NUM_ROWS):
-        for column in range(NUM_COLS):
-            if current_pos == (row, column):
-                maze[row][column].probability_of_containing_target = reduced_probability / probability_denominator
-            else:
-                maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target \
-                                                                     / probability_denominator
