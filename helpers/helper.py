@@ -416,24 +416,21 @@ def compute_probability(maze, current_pos):
                                                                      / probability_denominator
 
 
-def check_and_propagate_probability(maze, full_maze, current_pos, target_pos):
+def check_and_propagate_probability(maze, current_pos, target_pos):
     if current_pos == target_pos:
-        if full_maze[current_pos[0]][current_pos[1]] == 2:
-            assert maze[current_pos[0]][current_pos[1]].false_negative_rate == 0.2
+        if maze[current_pos[0]][current_pos[1]].false_negative_rate == 0.2:
             x = random.randint(0, 99)
             if x < 20:
                 compute_probability(maze, current_pos)
             else:
                 return True
-        elif full_maze[current_pos[0]][current_pos[1]] == 3:
-            assert maze[current_pos[0]][current_pos[1]].false_negative_rate == 0.5
+        elif maze[current_pos[0]][current_pos[1]].false_negative_rate == 0.5:
             x = random.randint(0, 99)
             if x < 50:
                 compute_probability(maze, current_pos)
             else:
                 return True
-        elif full_maze[current_pos[0]][current_pos[1]] == 4:
-            assert maze[current_pos[0]][current_pos[1]].false_negative_rate == 0.8
+        elif maze[current_pos[0]][current_pos[1]].false_negative_rate == 0.8:
             x = random.randint(0, 99)
             if x < 80:
                 compute_probability(maze, current_pos)
@@ -445,9 +442,9 @@ def check_and_propagate_probability(maze, full_maze, current_pos, target_pos):
     return False
 
 
-def examine_and_propagate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, node):
+def examine_and_propagate_probability(maze, current_pos, target_pos, current_estimated_goal, node):
     if current_pos == current_estimated_goal:
-        return check_and_propagate_probability(maze, full_maze, current_pos, target_pos)
+        return check_and_propagate_probability(maze, current_pos, target_pos)
 
     elif maze[node[0]][node[1]].is_blocked:
         p_of_x_y = maze[node[0]][node[1]].probability_of_containing_target
@@ -462,7 +459,7 @@ def examine_and_propagate_probability(maze, full_maze, current_pos, target_pos, 
                         maze[row][column].probability_of_containing_target / remaining_probability
         return False
     else:
-        return check_and_propagate_probability(maze, full_maze, node, target_pos)
+        return check_and_propagate_probability(maze, node, target_pos)
 
 
 def update_status(maze: list, maze_array: np.array, cur_pos: tuple):

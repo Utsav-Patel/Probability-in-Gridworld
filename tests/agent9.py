@@ -48,7 +48,7 @@ def find_moving_target(num: int):
         agent.planning(agent.current_estimated_goal)
         while (not agent.is_target_in_neighbors) and (agent.current_estimated_goal not in agent.parents):
             agent.maze[agent.current_estimated_goal[0]][agent.current_estimated_goal[1]].is_blocked = True
-            examine_and_propagate_probability(agent.maze, full_maze, agent.current_position, target_position,
+            examine_and_propagate_probability(agent.maze, agent.current_position, target_position,
                                               agent.current_estimated_goal, agent.current_estimated_goal)
             agent.pre_planning(agent_num)
             agent.planning(agent.current_estimated_goal)

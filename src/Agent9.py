@@ -92,8 +92,8 @@ class Agent9(Agent):
             self.num_examinations += 1
             # no_run = 10
             # while no_run > 0:
-            target_found = target_found or examine_and_propagate_probability(self.maze, full_maze, cur_pos,
-                                                                             target_pos, cur_pos, cur_pos)
+            target_found = target_found or examine_and_propagate_probability(self.maze, cur_pos, target_pos, cur_pos,
+                                                                             cur_pos)
             # no_run -= 1
         else:
             children = parent_to_child_dict(self.parents, self.current_estimated_goal)
@@ -102,8 +102,8 @@ class Agent9(Agent):
 
             if full_maze[children[cur_pos][0]][children[cur_pos][1]] == 1:
                 self.maze[children[cur_pos][0]][children[cur_pos][1]].is_blocked = True
-                examine_and_propagate_probability(self.maze, full_maze, cur_pos, target_pos,
-                                                  self.current_estimated_goal, children[cur_pos])
+                examine_and_propagate_probability(self.maze, cur_pos, target_pos, self.current_estimated_goal,
+                                                  children[cur_pos])
             else:
                 update_status(self.maze, full_maze, children[cur_pos])
                 current_path.append(children[cur_pos])

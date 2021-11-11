@@ -23,7 +23,7 @@ class Agent6(Agent):
 
     def examine(self, full_maze: np.array, target_pos):
         children = parent_to_child_dict(self.parents, self.current_estimated_goal)
-        value = examine_and_propagate_probability(self.maze, full_maze, self.current_position, target_pos,
+        value = examine_and_propagate_probability(self.maze, self.current_position, target_pos,
                                                   self.current_estimated_goal, children[self.current_position])
         self.num_examinations += 1
         return value

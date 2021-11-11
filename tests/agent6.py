@@ -39,7 +39,7 @@ def find_the_target(num: int):
             agent.planning(agent.current_estimated_goal)
             while agent.current_estimated_goal not in agent.parents:
                 agent.maze[agent.current_estimated_goal[0]][agent.current_estimated_goal[1]].is_blocked = True
-                examine_and_propagate_probability(agent.maze, random_maze, agent.current_position, target_pos,
+                examine_and_propagate_probability(agent.maze, agent.current_position, target_pos,
                                                   agent.current_estimated_goal, agent.current_estimated_goal)
                 agent.pre_planning(agent_num)
                 agent.planning(agent.current_estimated_goal)
