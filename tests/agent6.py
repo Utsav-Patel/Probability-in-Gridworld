@@ -5,7 +5,7 @@ from datetime import datetime
 
 from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS
 from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path, \
-    length_of_path_from_source_to_goal, examine_and_propagate_probability, plot_boxplot, generate_target_position
+    length_of_path_from_source_to_goal, examine_and_propagate_probability, generate_target_position
 from src.Agent6 import Agent6
 
 agent = Agent6()
