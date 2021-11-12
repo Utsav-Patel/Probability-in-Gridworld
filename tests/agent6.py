@@ -83,9 +83,9 @@ if __name__ == "__main__":
     n_cores = int(multiprocessing.cpu_count())
 
     print('Number of cores', n_cores)
-    p = multiprocessing.Pool(processes=1)
+    p = multiprocessing.Pool(processes=n_cores)
     print("processes started")
-    results = p.map(find_the_target, range(NUM_ITERATIONS))
+    results = p.imap_unordered(find_the_target, range(NUM_ITERATIONS))
     print("result obtained:")
     for result in results:
         # print(result)
