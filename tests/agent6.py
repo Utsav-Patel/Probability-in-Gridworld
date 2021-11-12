@@ -29,13 +29,10 @@ def find_the_target(num: int):
         now = datetime.now()
         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
         print("date and time =", dt_string)
-
         agent.reset()
         target_found = False
         while not target_found:
-
             agent.pre_planning(agent_num)
-
             agent.planning(agent.current_estimated_goal)
             while agent.current_estimated_goal not in agent.parents:
                 agent.maze[agent.current_estimated_goal[0]][agent.current_estimated_goal[1]].is_blocked = True
@@ -43,7 +40,7 @@ def find_the_target(num: int):
                                                   agent.current_estimated_goal, agent.current_estimated_goal)
                 agent.pre_planning(agent_num)
                 agent.planning(agent.current_estimated_goal)
-
+                
             agent.execution(random_maze)
 
             target_found = agent.examine(random_maze, target_pos)
@@ -52,7 +49,6 @@ def find_the_target(num: int):
             for row in range(NUM_ROWS):
                 for col in range(NUM_COLS):
                     p += agent.maze[row][col].probability_of_containing_target
-
         # print('Total counts', cnt)
         movements = compute_explored_cells_from_path(agent.final_paths)
         x.append([p, agent.num_examinations, movements])
