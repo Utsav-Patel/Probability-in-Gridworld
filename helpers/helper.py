@@ -123,9 +123,10 @@ def parent_to_child_dict(parent: dict, starting_position: tuple):
 
 def generate_target_position(full_maze: list):
     while True:
+        print("generating target")
         x = random.randint(0, len(full_maze) - 1)
         y = random.randint(0, len(full_maze) - 1)
-        if full_maze[x][y] == 1:
+        if full_maze[x][y] != 4:
             continue
         return x, y
 
