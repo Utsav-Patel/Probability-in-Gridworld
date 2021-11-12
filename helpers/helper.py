@@ -1,13 +1,11 @@
-import math
 import random
 import numpy as np
-import matplotlib.pyplot as plt
 
 from sortedcontainers import SortedSet
 from queue import Queue
 
 from constants import NUM_COLS, NUM_ROWS, X, Y, INF, IMG_PATH, ONE_PROBABILITY, ZERO_PROBABILITY,\
-    FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE
+    FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE, STARTING_POSITION_OF_AGENT
 
 
 def check(current_position: tuple):
@@ -38,7 +36,6 @@ def generate_grid_with_probability_p(p):
     :param p: probability of cell being blocked
     :return: Grid of size NUM_ROWS X NUM_COLS with each cell having uniform probability of being blocked is p.
     """
-    from constants import NUM_COLS, NUM_ROWS, STARTING_POSITION_OF_AGENT
 
     while True:
         randomly_generated_array = np.random.uniform(low=0.0, high=1.0, size=NUM_ROWS * NUM_COLS).reshape(NUM_ROWS,
@@ -204,14 +201,16 @@ def length_of_path_from_source_to_goal(maze_array: np.array, start_pos: tuple, g
 
 
 def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, agent=6):
-    if num_of_cells_processed < 1:
-        return current_pos
+    # if num_of_cells_processed < 1:
+    #     return current_pos
 
     max_p = 0.0
     cells_with_max_p = list()
     cells_with_least_d = list()
     least_distance = INF
     distance_array = length_of_path_from_source_to_all_nodes(maze, current_pos)
+    distance_array[current_pos[0]][current_pos[1]] = INF
+
     # print(distance_array)
 
     sum_probabilities = 0.0
@@ -248,8 +247,8 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, ag
     elif agent == 8:
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
-                if (row, col) == current_pos:
-                    continue
+                # if (row, col) == current_pos:
+                #     continue
                 maze[row][col].probability_of_containing_target /= sum_probabilities
                 x = (1 - maze[row][col].false_negative_rate) * maze[row][col].probability_of_containing_target / \
                     distance_array[row][col]
@@ -263,8 +262,8 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, ag
     elif agent == 9:
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
-                if (row, col) == current_pos:
-                    continue
+                # if (row, col) == current_pos:
+                #     continue
                 maze[row][col].probability_of_containing_target_next_step /= sum_probabilities_next_step
                 # (1 - maze[row][col].false_negative_rate) *
                 x = maze[row][col].probability_of_containing_target_next_step / distance_array[row][col]
@@ -412,7 +411,7 @@ def compute_probability(maze, current_pos):
             if current_pos == (row, column):
                 maze[row][column].probability_of_containing_target = reduced_probability / probability_denominator
             else:
-                maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target\
+                maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target \
                                                                      / probability_denominator
 
 
@@ -476,12 +475,3 @@ def update_status(maze: list, maze_array: np.array, cur_pos: tuple):
         maze[cur_pos[0]][cur_pos[1]].is_blocked = False
     else:
         raise Exception("Invalid value in maze_array")
-
-
-def plot_boxplot(data: list, title: str, legend: list, filename: str):
-    fig, ax = plt.subplots()
-    bp = ax.boxplot(data, patch_artist=True, notch='True', vert=0)
-    ax.set_yticklabels(legend)
-    plt.title(title)
-    plt.savefig(IMG_PATH + filename)
-    plt.show()

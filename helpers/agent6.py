@@ -9,17 +9,8 @@ def generate_grid_manually():
     This is the function to generate grid manually. This is helpful for the initial testing and problem 1.
     :return: Manually generated numpy array.
     """
-    array = np.zeros((NUM_ROWS, NUM_COLS))
 
-    array[0][0] = 3
-    array[0][1] = 1
-    array[0][2] = 1
-    array[1][0] = 2
-    array[1][1] = 2
-    array[1][2] = 3
-    array[2][0] = 3
-    array[2][1] = 4
-    array[2][2] = 4
+    array = [[4, 1, 2, 2, 2], [1, 1, 2, 2, 2], [4, 1, 2, 2, 2], [4, 1, 2, 2, 2], [4, 1, 2, 2, 2]]
     return array
 
 

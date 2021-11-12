@@ -21,6 +21,8 @@ def find_the_target(num: int):
     while True:
         random_maze = generate_grid_with_probability_p(PROBABILITY_OF_GRID)
         target_pos = generate_target_position(random_maze)
+        # random_maze = generate_grid_manually()
+        # target_pos = (0, 0)
         if length_of_path_from_source_to_goal(random_maze, STARTING_POSITION_OF_AGENT, target_pos) != INF:
             break
 
@@ -43,6 +45,17 @@ def find_the_target(num: int):
                                                   agent.current_estimated_goal, agent.current_estimated_goal)
                 agent.pre_planning(agent_num)
                 agent.planning(agent.current_estimated_goal)
+                # print('Full Maze')
+                # print(random_maze)
+                #
+                # for row in range(NUM_ROWS):
+                #     for col in range(NUM_COLS):
+                #         print(agent.maze[row][col].probability_of_containing_target, end=" ")
+                #     print()
+                #
+                # print("Current estimated goal:", agent.current_estimated_goal)
+                # print("Current Position:", agent.current_position)
+                # print("Parents:", agent.parents)
 
             agent.execution(random_maze)
 
@@ -108,7 +121,7 @@ if __name__ == "__main__":
         total_movements_8.append(result[2][2])
         total_cost_8.append(total_examinations_8[-1] + total_movements_8[-1])
 
-    plot_boxplot([total_cost_6, total_cost_7, total_cost_8], 'boxplot for total cost', legends, 'total_cost.png')
+    # plot_boxplot([total_cost_6, total_cost_7, total_cost_8], 'boxplot for total cost', legends, 'total_cost.png')
 
     end_time = time.time()
     print("Average Number of movements of agent 6 = ", np.average(total_movements_6))
