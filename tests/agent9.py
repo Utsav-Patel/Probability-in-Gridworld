@@ -1,6 +1,7 @@
 from datetime import datetime
 import multiprocessing
 import numpy as np
+import pickle
 
 from helpers.helper import generate_grid_with_probability_p, length_of_path_from_source_to_goal,\
     generate_target_position, examine_and_propagate_probability, compute_explored_cells_from_path
@@ -111,7 +112,7 @@ if __name__ == "__main__":
 
     n_cores = int(multiprocessing.cpu_count())
 
-    # print('Number of cores', n_cores)
+    print('Number of cores', n_cores)
     p = multiprocessing.Pool(processes=n_cores)
 
     results = p.imap_unordered(find_moving_target, range(NUM_ITERATIONS))
@@ -122,6 +123,8 @@ if __name__ == "__main__":
         total_movements.append(result[1])
         total_cost.append(result[2])
 
+    with open('agent9_data.pkl', 'wb') as f:
+        pickle.dump({'total_cost': total_cost, 'total_examinations': total_examinations, 'total_movements': total_movements}, f)
     # plot_boxplot([total_cost_6, total_cost_7, total_cost_8], 'boxplot for total cost', legends, 'total_cost.png')
 
     end_time = datetime.now()
