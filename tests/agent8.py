@@ -3,9 +3,10 @@
 import time
 import numpy as np
 
-from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS
-from helpers.agent8 import set_random_target, examine_and_propagate_probability
-from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path, add_fractions, \
+from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS, \
+    ACCURACY_TO_ACHIEVE
+from helpers.agent8 import set_random_target, examine_and_propagate_probability, calculate_global_threshold
+from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path, \
     length_of_path_from_source_to_goal
 
 from src.Agent8 import Agent8                                                       # make changes in Agent8 src
@@ -24,6 +25,11 @@ def find_the_target():
     agent_num = 7                                                           # indicates which type of prob to use
     result = list()                                                         # list that contains final results
 
+    # list containing global threshold of executions for different terrain types.
+    # global_threshold_for_examinations = calculate_global_threshold(ACCURACY_TO_ACHIEVE)
+    print("Global Threshold", agent.global_threshold)
+
+    # print("Global Threshold:", global_threshold_for_examinations)
     # loop for find a "reachable" target
     while True:
         random_maze = generate_grid_with_probability_p(PROBABILITY_OF_GRID)  # generate gridworld with full information
@@ -39,6 +45,7 @@ def find_the_target():
     # reachable target is set, so now reset all the variables of the Agent8
     agent.reset()
     # print("Main Here")
+    print("Global Threshold", agent.global_threshold)
 
     # loop target_found is FALSE
 
@@ -52,7 +59,7 @@ def find_the_target():
         while agent.current_estimated_goal not in agent.parents:
             # not in path so make it blocked and examine it and propagate the probability to all the cells accordingly.
             agent.maze[agent.current_estimated_goal[0]][agent.current_estimated_goal[1]].is_blocked = True
-            examine_and_propagate_probability(agent.maze, random_maze, agent.current_position, target_pos,
+            examine_and_propagate_probability(agent.maze, agent.current_position, target_pos,
                                               agent.current_estimated_goal, agent.current_estimated_goal)
 
             agent.pre_planning(agent_num)                                       # set new agent.current_estimated_target

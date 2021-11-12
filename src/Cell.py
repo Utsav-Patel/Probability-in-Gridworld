@@ -37,6 +37,11 @@ class Cell:
         self.four_neighbors = list()
         self.eight_neighbors = list()
 
+        # newly added properties
+        self.previous_examinations = 0
+        self.previous_visits = 0
+        self.max_threshold_of_examinations = 0
+
     # Reset attributes of this class
     def reset_except_h(self):
         self.g = INF
@@ -57,6 +62,9 @@ class Cell:
         self.probability_of_containing_target_next_step = 1 / (NUM_ROWS * NUM_COLS)
         self.false_negative_rate = 0.5
 
+        self.previous_examinations = 0
+        self.previous_visits = 0
+        self.max_threshold_of_examinations = 0
         # self.num_neighbor = 0
         # self.min_hidden_cell_neighbor = INF
 

@@ -2,8 +2,10 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
+import math
 
-from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, X, Y
+from constants import NUM_ROWS, NUM_COLS, STARTING_POSITION_OF_AGENT, X, Y, ACCURACY_TO_ACHIEVE, \
+    FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE
 from src.Cell import Cell
 from helpers.helper import astar_search, check
 from helpers.helper import compute_current_estimated_goal
@@ -52,6 +54,12 @@ class Agent(ABC):
         self.num_early_termination = 0
 
         self.num_examinations = 0
+
+        # set list of global threshold
+        self.global_threshold = list()
+        self.global_threshold.append(math.ceil(math.log(ACCURACY_TO_ACHIEVE) / math.log(FLAT_FALSE_NEGATIVE_RATE)))
+        self.global_threshold.append(math.ceil(math.log(ACCURACY_TO_ACHIEVE) / math.log(HILLY_FALSE_NEGATIVE_RATE)))
+        self.global_threshold.append(math.ceil(math.log(ACCURACY_TO_ACHIEVE) / math.log(FOREST_FALSE_NEGATIVE_RATE)))
 
     def pre_planning(self, agent_num=6):
         self.current_estimated_goal = compute_current_estimated_goal(self.maze, self.current_position,
