@@ -120,8 +120,8 @@ def parent_to_child_dict(parent: dict, starting_position: tuple):
 
 def generate_target_position(full_maze: list):
     while True:
-        x = random.randint(0, len(full_maze) - 1)
-        y = random.randint(0, len(full_maze) - 1)
+        x = random.randint(0, NUM_ROWS - 1)
+        y = random.randint(0, NUM_COLS - 1)
         if full_maze[x][y] == 1:
             continue
         return x, y
@@ -200,7 +200,7 @@ def length_of_path_from_source_to_goal(maze_array: np.array, start_pos: tuple, g
     return distance_array[goal_pos[0]][goal_pos[1]]
 
 
-def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, agent=6):
+def compute_current_estimated_goal(maze, current_pos, agent=6):
     # if num_of_cells_processed < 1:
     #     return current_pos
 

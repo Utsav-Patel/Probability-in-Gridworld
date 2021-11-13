@@ -54,8 +54,7 @@ class Agent(ABC):
         self.num_examinations = 0
 
     def pre_planning(self, agent_num=6):
-        self.current_estimated_goal = compute_current_estimated_goal(self.maze, self.current_position,
-                                                                     self.num_cells_processed_while_planning, agent_num)
+        self.current_estimated_goal = compute_current_estimated_goal(self.maze, self.current_position, agent_num)
 
     # General method for planning
     def planning(self, goal_pos):

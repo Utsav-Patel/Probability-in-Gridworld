@@ -2,6 +2,7 @@ import time
 import numpy as np
 import multiprocessing
 from datetime import datetime
+import pickle
 
 from constants import STARTING_POSITION_OF_AGENT, INF, PROBABILITY_OF_GRID, NUM_ROWS, NUM_COLS, NUM_ITERATIONS
 from helpers.helper import generate_grid_with_probability_p, compute_explored_cells_from_path, \
@@ -59,7 +60,7 @@ def find_the_target(num: int):
 
             agent.execution(random_maze)
 
-            target_found = agent.examine(random_maze, target_pos)
+            target_found = agent.examine(target_pos)
 
             p = 0.0
             for row in range(NUM_ROWS):
@@ -122,6 +123,18 @@ if __name__ == "__main__":
         total_cost_8.append(total_examinations_8[-1] + total_movements_8[-1])
 
     # plot_boxplot([total_cost_6, total_cost_7, total_cost_8], 'boxplot for total cost', legends, 'total_cost.png')
+
+    with open('../data/agent6_100_grids_100x100_flat_target.pkl', 'wb') as f:
+        pickle.dump({'total_actions': total_cost_6, 'total_examinations': total_examinations_6, 'total_movements':
+            total_movements_6}, f)
+
+    with open('../data/agent7_100_grids_100x100_flat_target.pkl', 'wb') as f:
+        pickle.dump({'total_actions': total_cost_7, 'total_examinations': total_examinations_7, 'total_movements':
+            total_movements_7}, f)
+
+    with open('../agent8_100_grids_100x100_flat_target.pkl', 'wb') as f:
+        pickle.dump({'total_actions': total_cost_8, 'total_examinations': total_examinations_8, 'total_movements':
+            total_movements_8}, f)
 
     end_time = time.time()
     print("Average Number of movements of agent 6 = ", np.average(total_movements_6))

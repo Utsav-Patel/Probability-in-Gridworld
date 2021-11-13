@@ -21,9 +21,10 @@ class Agent6(Agent):
         self.final_paths.append(current_path)
         self.num_backtracks += num_backtracks
 
-    def examine(self, full_maze: np.array, target_pos):
+    def examine(self, target_pos):
         children = parent_to_child_dict(self.parents, self.current_estimated_goal)
         value = examine_and_propagate_probability(self.maze, self.current_position, target_pos,
                                                   self.current_estimated_goal, children[self.current_position])
-        self.num_examinations += 1
+        if self.current_position == self.current_estimated_goal:
+            self.num_examinations += 1
         return value
