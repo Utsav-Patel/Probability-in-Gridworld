@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import math
 
 from constants import NUM_ROWS, NUM_COLS, INF, HILLY_FALSE_NEGATIVE_RATE, FLAT_FALSE_NEGATIVE_RATE, \
     FOREST_FALSE_NEGATIVE_RATE, ZERO_PROBABILITY, ONE_PROBABILITY
@@ -83,6 +84,7 @@ def compute_current_estimated_goal(maze, current_pos, num_of_cells_processed, ag
         # print(cells_with_least_d[0])
         return cells_with_least_d[0]
 
+
 #
 # def examine_and_propagate_probability(maze, full_maze, current_pos, target_pos, current_estimated_goal, node):
 #     # check if current position of Agent is current_estimated_goal
@@ -153,10 +155,12 @@ def compute_probability(false_negative_rate, maze, current_pos):
 
 
 def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_pos: tuple, parents: dict,
-                      cells_to_examine, target_position):
+                      cells_to_examine, target_position, global_threshold):
     """
     This is the repeated forward function which can be used with any algorithm (astar or bfs). This function will
     repeatedly call corresponding algorithm function until it reaches goal or finds out there is no path till goal.
+    :param global_threshold: list that contains global threshold of examinations for flat, hilly and forest in respected
+                            order
     :param goal_pos: The current_estimates_goal position
     :param target_position: The actual target location in the maze
     :param maze: Maze array of agent
@@ -185,25 +189,55 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
 
         if maze_array[cur_pos[0]][cur_pos[1]] == 1:  # if the cell is blocked
             maze[cur_pos[0]][cur_pos[1]].is_blocked = True
+            maze[cur_pos[0]][cur_pos[1]].max_threshold_of_examinations = 0
         elif maze_array[cur_pos[0]][cur_pos[1]] == 2:  # if cell has flat terrain type
             maze[cur_pos[0]][cur_pos[1]].false_negative_rate = FLAT_FALSE_NEGATIVE_RATE
             maze[cur_pos[0]][cur_pos[1]].is_blocked = False
+
+            if maze[cur_pos[0]][cur_pos[1]].previous_visits == 0:  # cell has not been visited previously
+
+                # set the cell's max_threshold of examinations from list global_threshold
+                maze[cur_pos[0]][cur_pos[1]].max_threshold_of_examinations = global_threshold[0]
         elif maze_array[cur_pos[0]][cur_pos[1]] == 3:  # if cell has hilly terrain type
             maze[cur_pos[0]][cur_pos[1]].false_negative_rate = HILLY_FALSE_NEGATIVE_RATE
             maze[cur_pos[0]][cur_pos[1]].is_blocked = False
+
+            if maze[cur_pos[0]][cur_pos[1]].previous_visits == 0:  # cell has not been visited previously
+                # set the cell's max_threshold of examinations from list global_threshold
+                maze[cur_pos[0]][cur_pos[1]].max_threshold_of_examinations = global_threshold[1]
         elif maze_array[cur_pos[0]][cur_pos[1]] == 4:  # if cell has forest terrain type
             maze[cur_pos[0]][cur_pos[1]].false_negative_rate = FOREST_FALSE_NEGATIVE_RATE
             maze[cur_pos[0]][cur_pos[1]].is_blocked = False
+
+            if maze[cur_pos[0]][cur_pos[1]].previous_visits == 0:  # cell has not been visited previously
+                # set the cell's max_threshold of examinations from list global_threshold
+                maze[cur_pos[0]][cur_pos[1]].max_threshold_of_examinations = global_threshold[2]
         else:
             raise Exception("Invalid value in maze_array")
 
-        # examination of curr_pos if it is cells_to_examine set
+        # examination of curr_pos if it is in cells_to_examine set
         if cur_pos in cells_to_examine:
-            # truth_value = examine(maze_array, target_position, parents, goal_pos, maze, cur_pos)
-            truth_value = examine_and_propagate_probability(maze, maze_array, cur_pos, target_position, goal_pos,
-                                                            cur_pos)
-            # assert not truth_value
-            examinations += 1
+            current_visit_number = maze[cur_pos[0]][cur_pos[1]].previous_visits + 1
+            previous_examinations = maze[cur_pos[0]][cur_pos[1]].previous_examinations
+            no_times_to_examine = (maze[cur_pos[0]][cur_pos[1]].max_threshold_of_examinations / global_threshold[0]) * \
+                                  current_visit_number - previous_examinations
+
+            no_times_to_examine = min(maze[cur_pos[0]][cur_pos[1]].max_threshold_of_examinations - previous_examinations
+                                      , no_times_to_examine)
+
+            maze[cur_pos[0]][cur_pos[1]].previous_examinations += no_times_to_examine
+
+            while no_times_to_examine > 0:
+                # truth_value = examine(maze_array, target_position, parents, goal_pos, maze, cur_pos)
+                truth_value = examine_and_propagate_probability(maze, cur_pos, target_position, goal_pos,
+                                                                cur_pos)
+                # assert not truth_value
+                examinations += 1
+                if truth_value:
+                    break
+                no_times_to_examine -= 1
+
+            maze[cur_pos[0]][cur_pos[1]].previous_visits += 1
 
         if truth_value:
             # cur_pos = children[cur_pos]  # update curr_pos to the next cell in path i.e child of curr_pos
@@ -217,7 +251,7 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
         if maze_array[children[cur_pos][0]][children[cur_pos][1]] == 1:
             maze[children[cur_pos][0]][children[cur_pos][1]].is_blocked = True
             # truth_value = examine(maze_array, target_position, parents, goal_pos, maze, cur_pos)
-            truth_value = examine_and_propagate_probability(maze, maze_array, cur_pos, target_position, goal_pos,
+            truth_value = examine_and_propagate_probability(maze, cur_pos, target_position, goal_pos,
                                                             children[cur_pos])
             assert not truth_value
             return current_path, num_backtracks, truth_value, examinations
@@ -231,3 +265,19 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
 #     value = examine_and_propagate_probability(maze, full_maze, current_position, target_pos,
 #                                               current_estimated_goal, children[current_position])
 #     return value
+
+def calculate_global_threshold(accuracy):
+    """
+    Calculates the global threshold for examination of the each cell of different terrain type
+    :param accuracy: Accuracy to be achieved in the final result
+    :return: list of the global threshold contains threshold for flat, hilly and forest type.
+    """
+    global_threshold = list()
+    flat_threshold = math.ceil(math.log(accuracy) / math.log(FLAT_FALSE_NEGATIVE_RATE))
+    global_threshold.append(flat_threshold)
+    hilly_threshold = math.ceil(math.log(accuracy) / math.log(HILLY_FALSE_NEGATIVE_RATE))
+    global_threshold.append(hilly_threshold)
+    forest_threshold = math.ceil(math.log(accuracy) / math.log(FOREST_FALSE_NEGATIVE_RATE))
+    global_threshold.append(forest_threshold)
+
+    return global_threshold

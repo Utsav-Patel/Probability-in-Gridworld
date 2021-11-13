@@ -12,7 +12,7 @@ class Agent8(Agent):
 
     # Override execution method of Agent class
     def execution(self, full_maze: np.array, target_position=None):
-        percent_of_cells_to_examine = 30  # what % of cells in path from A* to examine with highest probabilities
+        percent_of_cells_to_examine = 15  # what % of cells in path from A* to examine with highest probabilities
 
         # get path from start(current_position) to goal(current_estimated_goal)
         # print("Parents:", self.parents)
@@ -71,7 +71,8 @@ class Agent8(Agent):
                                                                                     self.current_position,
                                                                                     self.current_estimated_goal,
                                                                                     self.parents, cells_to_examine,
-                                                                                    target_position)[:4]
+                                                                                    target_position,
+                                                                                    self.global_threshold)[:4]
 
         self.current_position = current_path[-1]
         self.final_paths.append(current_path)
