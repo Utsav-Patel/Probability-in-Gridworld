@@ -27,6 +27,8 @@ def find_the_target(num: int):
         if length_of_path_from_source_to_goal(random_maze, STARTING_POSITION_OF_AGENT, target_pos) != INF:
             break
 
+    # print(random_maze)
+    # print(target_pos)
     for agent_num in agents:
         print('Starting agent', agent_num)
         now = datetime.now()
@@ -39,10 +41,13 @@ def find_the_target(num: int):
 
             agent.pre_planning(agent_num)
 
+            # print('Current estimated goal')
+            # print(agent.current_estimated_goal)
             agent.planning(agent.current_estimated_goal)
             while agent.current_estimated_goal not in agent.parents:
                 agent.maze[agent.current_estimated_goal[0]][agent.current_estimated_goal[1]].is_blocked = True
-                examine_and_propagate_probability(agent.maze, agent.current_position, target_pos,
+                examine_and_propagate_probability(agent.maze, agent.probability_of_containing_target,
+                                                  agent.false_negative_rates, agent.current_position, target_pos,
                                                   agent.current_estimated_goal, agent.current_estimated_goal)
                 agent.pre_planning(agent_num)
                 agent.planning(agent.current_estimated_goal)
@@ -62,10 +67,11 @@ def find_the_target(num: int):
 
             target_found = agent.examine(target_pos)
 
-            p = 0.0
-            for row in range(NUM_ROWS):
-                for col in range(NUM_COLS):
-                    p += agent.maze[row][col].probability_of_containing_target
+            # print('total probability: ', np.sum(agent.probability_of_containing_target))
+            p = np.sum(agent.probability_of_containing_target)
+            # for row in range(NUM_ROWS):
+            #     for col in range(NUM_COLS):
+            #         p += agent.maze[row][col].probability_of_containing_target
 
         # print('Total counts', cnt)
         movements = compute_explored_cells_from_path(agent.final_paths)
@@ -132,7 +138,7 @@ if __name__ == "__main__":
         pickle.dump({'total_actions': total_cost_7, 'total_examinations': total_examinations_7, 'total_movements':
             total_movements_7}, f)
 
-    with open('../agent8_100_grids_100x100_flat_target.pkl', 'wb') as f:
+    with open('../data/agent8_100_grids_100x100_flat_target.pkl', 'wb') as f:
         pickle.dump({'total_actions': total_cost_8, 'total_examinations': total_examinations_8, 'total_movements':
             total_movements_8}, f)
 
@@ -143,7 +149,7 @@ if __name__ == "__main__":
     print("Total average cost of agent 6 = ", np.average(total_movements_6) + np.average(total_examinations_6))
     print("Average Number of movements of agent 7 = ", np.average(total_movements_7))
     print("Average total probability of agent 7 = ", np.average(total_p_7))
-    print("Average Number of total examinations = 7", np.average(total_examinations_7))
+    print("Average Number of total examinations of agent 7 = ", np.average(total_examinations_7))
     print("Total average cost of agent 7 = ", np.average(total_movements_7) + np.average(total_examinations_7))
     print("Average Number of movements of agent 8 = ", np.average(total_movements_8))
     print("Average total probability of agent 8 = ", np.average(total_p_8))

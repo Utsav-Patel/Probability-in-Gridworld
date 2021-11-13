@@ -1,7 +1,6 @@
 import numpy as np
 
-from constants import NUM_ROWS, NUM_COLS
-from helpers.helper import parent_to_child_dict, update_status
+from helpers.helper import update_status
 
 
 def generate_grid_manually():
@@ -14,7 +13,8 @@ def generate_grid_manually():
     return array
 
 
-def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_pos: tuple, parents: dict):
+def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_array: np.array, start_pos: tuple,
+                      goal_pos: tuple, children: dict):
     """
     This is the repeated forward function which can be used with any algorithm (astar or bfs). This function will
     repeatedly call corresponding algorithm function until it reaches goal or finds out there is no path till goal.
@@ -29,8 +29,6 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
     """
 
     num_backtracks = 0
-    # GOAL_POSITION_OF_AGENT = goal_pos
-    children = parent_to_child_dict(parents, goal_pos)
     # print(children)
     # Setting current position to starting position so we can start iterating from start_pos
     cur_pos = start_pos
@@ -48,7 +46,7 @@ def forward_execution(maze: list, maze_array: np.array, start_pos: tuple, goal_p
 
         # maze[cur_pos[0]][cur_pos[1]].is_confirmed = True
 
-        update_status(maze, maze_array, cur_pos)
+        update_status(maze, false_negative_rates, maze_array, cur_pos)
 
         # Explore the field of view and update the blocked nodes if there's any in the path.
         # if want_to_explore_field_of_view:
