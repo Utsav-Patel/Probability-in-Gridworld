@@ -130,15 +130,15 @@ if __name__ == "__main__":
 
     # plot_boxplot([total_cost_6, total_cost_7, total_cost_8], 'boxplot for total cost', legends, 'total_cost.png')
 
-    with open('../data/agent6_100_grids_100x100_flat_target.pkl', 'wb') as f:
+    with open('../data/agent6_100_grids_100x100_forest_target.pkl', 'wb') as f:
         pickle.dump({'total_actions': total_cost_6, 'total_examinations': total_examinations_6, 'total_movements':
             total_movements_6}, f)
 
-    with open('../data/agent7_100_grids_100x100_flat_target.pkl', 'wb') as f:
+    with open('../data/agent7_100_grids_100x100_forest_target.pkl', 'wb') as f:
         pickle.dump({'total_actions': total_cost_7, 'total_examinations': total_examinations_7, 'total_movements':
             total_movements_7}, f)
 
-    with open('../data/agent8_100_grids_100x100_flat_target.pkl', 'wb') as f:
+    with open('../data/agent8_100_grids_100x100_forest_target.pkl', 'wb') as f:
         pickle.dump({'total_actions': total_cost_8, 'total_examinations': total_examinations_8, 'total_movements':
             total_movements_8}, f)
 

@@ -122,7 +122,7 @@ def generate_target_position(full_maze: list):
     while True:
         x = random.randint(0, NUM_ROWS - 1)
         y = random.randint(0, NUM_COLS - 1)
-        if full_maze[x][y] == 1:
+        if full_maze[x][y] != 4:
             continue
         return x, y
 
