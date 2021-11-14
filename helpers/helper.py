@@ -209,6 +209,8 @@ def compute_current_estimated_goal(maze, current_pos, agent, probability_of_cont
     cells_with_max_p = list()
     cells_with_least_d = list()
     least_distance = INF
+
+    indexes_of_max_probability = list()
     distance_array = length_of_path_from_source_to_all_nodes(maze, current_pos)
     distance_array[current_pos[0]][current_pos[1]] = INF
 

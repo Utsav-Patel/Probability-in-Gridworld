@@ -49,7 +49,8 @@ def find_moving_target(num: int):
         agent.planning(agent.current_estimated_goal)
         while (not agent.is_target_in_neighbors) and (agent.current_estimated_goal not in agent.parents):
             agent.maze[agent.current_estimated_goal[0]][agent.current_estimated_goal[1]].is_blocked = True
-            examine_and_propagate_probability(agent.maze, agent.current_position, target_position,
+            examine_and_propagate_probability(agent.maze, agent.probability_of_containing_target_next_step,
+                                              agent.false_negative_rates, agent.current_position, target_position,
                                               agent.current_estimated_goal, agent.current_estimated_goal)
             agent.pre_planning(agent_num)
             agent.planning(agent.current_estimated_goal)
@@ -63,15 +64,15 @@ def find_moving_target(num: int):
         #     input()
         # target_found = agent.examine(random_maze, target_pos)
 
-        p = 0.0
-        p_next = 0.0
-        # print('Probability of containing target')
-        for row in range(NUM_ROWS):
-            for col in range(NUM_COLS):
-                p += agent.maze[row][col].probability_of_containing_target
-                p_next += agent.maze[row][col].probability_of_containing_target_next_step
-                # print(format(agent.maze[row][col].probability_of_containing_target, ".5f"), end=" ")
-            # print()
+        p = np.sum(agent.probability_of_containing_target)
+        p_next = np.sum(agent.probability_of_containing_target_next_step)
+        # # print('Probability of containing target')
+        # for row in range(NUM_ROWS):
+        #     for col in range(NUM_COLS):
+        #         p += agent.maze[row][col].probability_of_containing_target
+        #         p_next += agent.maze[row][col].probability_of_containing_target_next_step
+        # print(format(agent.maze[row][col].probability_of_containing_target, ".5f"), end=" ")
+        # print()
 
         # print('Probability of containing target for next moment')
         # for row in range(NUM_ROWS):
@@ -123,8 +124,9 @@ if __name__ == "__main__":
         total_movements.append(result[1])
         total_cost.append(result[2])
 
-    with open('agent9_data.pkl', 'wb') as f:
-        pickle.dump({'total_cost': total_cost, 'total_examinations': total_examinations, 'total_movements': total_movements}, f)
+    with open('../data/agent9_data.pkl', 'wb') as f:
+        pickle.dump({'total_cost': total_cost, 'total_examinations': total_examinations, 'total_movements':
+            total_movements}, f)
     # plot_boxplot([total_cost_6, total_cost_7, total_cost_8], 'boxplot for total cost', legends, 'total_cost.png')
 
     end_time = datetime.now()
