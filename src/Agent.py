@@ -13,11 +13,10 @@ from helpers.helper import compute_current_estimated_goal
 
 # Agent class
 class Agent(ABC):
+    # Method to initialize some variables for this class
     def __init__(self):
         self.maze = list()
-        # self.knowledge_base = list()
-        # self.variable_to_constraint_dict = dict()
-        # Compute four neighbors
+        # Compute four and eight neighbors of each cell
         for row in range(NUM_ROWS):
             cell_list = list()
             for col in range(NUM_COLS):
@@ -25,7 +24,6 @@ class Agent(ABC):
                 for ind in range(len(X)):
                     neighbor = (row + X[ind], col + Y[ind])
                     if check(neighbor):
-                        # cell_list[col].num_neighbor += 1
                         cell_list[col].four_neighbors.append(neighbor)
                 for ind in range(-1, 2):
                     for ind2 in range(-1, 2):
@@ -36,26 +34,14 @@ class Agent(ABC):
                             cell_list[col].eight_neighbors.append(neighbor)
             self.maze.append(cell_list)
 
-        # Initialize some variables
-        # self.algorithm = algorithm
+        # Initialize some important variables of this class
         self.current_position = STARTING_POSITION_OF_AGENT
         self.probability_of_containing_target = np.zeros((NUM_ROWS, NUM_COLS)) + (1.0 / (NUM_ROWS * NUM_COLS))
         self.false_negative_rates = np.zeros((NUM_ROWS, NUM_COLS)) + 0.5
-        # self.num_cells_processed_while_planning = 0
         self.final_paths = list()
-        # self.num_backtracks = 0
         self.parents = dict()
         self.children = dict()
-
         self.current_estimated_goal = list()
-
-        # self.num_confirmed_cells = 0
-        # self.num_confirmed_blocked_cells = 0
-        #
-        # self.num_astar_calls = 0
-        # self.num_bumps = 0
-        # self.num_early_termination = 0
-        #
         self.num_examinations = 0
 
         # set list of global threshold
@@ -65,34 +51,38 @@ class Agent(ABC):
         self.global_threshold.append(math.ceil(math.log(ACCURACY_TO_ACHIEVE) / math.log(FOREST_FALSE_NEGATIVE_RATE)))
 
     def pre_planning(self, agent_num=6):
+        """
+        Method to find current estimated goal
+        :param agent_num: agent number for which you want to find estimated goal
+        :return: Nothing to return as we are setting attribute
+        """
         self.current_estimated_goal = compute_current_estimated_goal(self.maze, self.current_position, agent_num,
                                                                      self.probability_of_containing_target,
                                                                      self.false_negative_rates)
 
     # General method for planning
     def planning(self, goal_pos):
+        """
+        Method to find a path from current position to current estimated goal
+        :param goal_pos: agent's current estimated goal
+        :return: Nothing as we are storing results in agent's parents object
+        """
         self.parents, num_explored_nodes = astar_search(self.maze, self.current_position, goal_pos)[:2]
         # self.num_cells_processed_while_planning += num_explored_nodes
 
     # reset method
     def reset(self):
-        # self.knowledge_base = list()
-        # self.variable_to_constraint_dict = dict()
+        """
+        Reset method to reset each each variable
+        :return: Nothing
+        """
         self.current_position = STARTING_POSITION_OF_AGENT
         self.probability_of_containing_target = np.zeros((NUM_ROWS, NUM_COLS)) + (1.0 / (NUM_ROWS * NUM_COLS))
         self.false_negative_rates = np.zeros((NUM_ROWS, NUM_COLS)) + 0.5
-        # self.num_cells_processed_while_planning = 0
         self.final_paths = list()
-        # self.num_backtracks = 0
         self.parents = dict()
         self.children = dict()
         self.current_estimated_goal = list()
-        # self.num_confirmed_cells = 0
-        # self.num_confirmed_blocked_cells = 0
-
-        # self.num_astar_calls = 0
-        # self.num_bumps = 0
-        # self.num_early_termination = 0
 
         for row in range(NUM_ROWS):
             for col in range(NUM_COLS):
