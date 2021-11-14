@@ -8,31 +8,47 @@ from helpers.helper import check
 
 
 def move_target(current_position_of_target: tuple, full_maze: np.array):
-
+    """
+    Function is used to move target one position
+    :param current_position_of_target: target's current position
+    :param full_maze: Full Maze
+    :return: Target's next position
+    """
+    # Check possible moves for the target to move
     possible_positions_to_move = list()
     for ind in range(len(X)):
         neighbor = (current_position_of_target[0] + X[ind], current_position_of_target[1] + Y[ind])
         if check(neighbor) and full_maze[neighbor[0]][neighbor[1]] != 1:
             possible_positions_to_move.append(neighbor)
 
-    # assert len(possible_positions_to_move) >= 1
+    # Pick uniformly random from all possible moves
     return possible_positions_to_move[random.randint(0, len(possible_positions_to_move) - 1)]
 
 
 def plot_boxplot(data: list, title: str, titles_for_each_plot: list, legends: list):
+    """
+    Function is used to plot box plot for agent 9.
+    :param data: list of list to store data
+    :param title: title of the box plot
+    :param titles_for_each_plot: title for each box plot
+    :param legends: legends for each box plot
+    :return: None
+    """
     fig, ax = plt.subplots(3)
     for ind in range(len(legends)):
         ax[ind].boxplot(data[legends[ind]], patch_artist=True, notch='True', vert=0)
-        # ax[ind].set_yticklabels(legends[ind])
         ax[ind].set_title(titles_for_each_plot[ind])
     fig.suptitle(title)
-    # fig.text(0.5, 0.04, 'Values', ha='center')
     fig.tight_layout()
-    # plt.savefig(IMG_PATH + filename)
     plt.show()
 
 
 def plot_histogram(data: dict):
+    """
+    Function is used to plot histogram for agent 9
+    :param data: list of list to store data
+    :return: None
+    """
     fig = plt.figure(figsize=(10, 5))
     gs = GridSpec(nrows=2, ncols=2)
 
@@ -50,6 +66,4 @@ def plot_histogram(data: dict):
 
     fig.tight_layout()
     fig.suptitle('Histograms')
-    # plt.savefig(IMG_PATH + filename)
-    # plt.legend(loc='upper right')
     plt.show()

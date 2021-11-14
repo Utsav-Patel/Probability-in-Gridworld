@@ -4,8 +4,8 @@ import numpy as np
 from sortedcontainers import SortedSet
 from queue import Queue
 
-from constants import NUM_COLS, NUM_ROWS, X, Y, INF, IMG_PATH, ONE_PROBABILITY, ZERO_PROBABILITY, \
-    FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE, STARTING_POSITION_OF_AGENT
+from constants import NUM_COLS, NUM_ROWS, X, Y, INF, ONE_PROBABILITY, ZERO_PROBABILITY, STARTING_POSITION_OF_AGENT, \
+    FLAT_FALSE_NEGATIVE_RATE, HILLY_FALSE_NEGATIVE_RATE, FOREST_FALSE_NEGATIVE_RATE
 
 
 def check(current_position: tuple):
@@ -40,7 +40,6 @@ def generate_grid_with_probability_p(p):
     while True:
         randomly_generated_array = np.random.uniform(low=0.0, high=1.0, size=NUM_ROWS * NUM_COLS).reshape(NUM_ROWS,
                                                                                                           NUM_COLS)
-        # randomly_generated_array[GOAL_POSITION_OF_AGENT[0]][GOAL_POSITION_OF_AGENT[1]] = 0
         randomly_generated_array[randomly_generated_array >= (1 - p)] = 1
         randomly_generated_array[randomly_generated_array < (1 - p) / 3] = 2
         randomly_generated_array[
@@ -67,14 +66,13 @@ def manhattan_distance(pos1: tuple, pos2: tuple):
     return distance
 
 
-def compare_fractions(num_1, num_2):
-    # a = num_1[0]
-    # b = num_1[1]
-    # c = num_2[0]
-    # d = num_2[1]
-
-    # val = (a * d - b * c) / (b * d)
-
+def compare_fractions(num_1: float, num_2: float):
+    """
+    Compare function for two float variable
+    :param num_1: first variable
+    :param num_2: second variable
+    :return: 1 if num1 > num2, 2 if num1 < num2, 0 if num1 == num2
+    """
     if num_1 - num_2 > 0:
         return 1
     elif num_1 - num_2 < 0:
@@ -119,6 +117,11 @@ def parent_to_child_dict(parent: dict, starting_position: tuple):
 
 
 def generate_target_position(full_maze: list):
+    """
+    Generate target position
+    :param full_maze: Full/Origin maze
+    :return: x, y coordinate of generated target position
+    """
     while True:
         x = random.randint(0, NUM_ROWS - 1)
         y = random.randint(0, NUM_COLS - 1)
@@ -200,131 +203,68 @@ def length_of_path_from_source_to_goal(maze_array: np.array, start_pos: tuple, g
     return distance_array[goal_pos[0]][goal_pos[1]]
 
 
-def compute_current_estimated_goal(maze, current_pos, agent, probability_of_containing_target: np.ndarray,
+def compute_current_estimated_goal(maze: list, current_pos: tuple, agent: int,
+                                   probability_of_containing_target: np.ndarray,
                                    false_negative_rates: np.ndarray, probability_of_containing_target_next_step=None):
-    # if num_of_cells_processed < 1:
-    #     return current_pos
-
-    max_p = 0.0
-    cells_with_max_p = list()
-    cells_with_least_d = list()
-    least_distance = INF
-
+    """
+    Function is used to find a current estimated goal
+    :param maze: Maze object
+    :param current_pos: current position
+    :param agent: agent number
+    :param probability_of_containing_target: numpy array to store probabilities (current belief)
+    :param false_negative_rates: numpy array to store false negative rates
+    :param probability_of_containing_target_next_step: prediction using current belief for agent 9
+    :return: current estimated goal
+    """
+    # Prepare a list to store indexes of maximum probabilities
     indexes_of_max_probability = list()
+
+    # distance array to find distance from source to all nodes
     distance_array = length_of_path_from_source_to_all_nodes(maze, current_pos)
+
+    # Assign current cell's distance to zero to avoid divide by zero error.
     distance_array[current_pos[0]][current_pos[1]] = INF
 
-    # print(distance_array)
-
-    # sum_probabilities = 0.0
-    # sum_probabilities_next_step = 0.0
-
+    # Normalize the probability
     probability_of_containing_target /= np.sum(probability_of_containing_target)
     if probability_of_containing_target_next_step is not None:
         probability_of_containing_target_next_step /= np.sum(probability_of_containing_target_next_step)
 
-    # for row in range(NUM_ROWS):
-    #     for col in range(NUM_COLS):
-    #         sum_probabilities += maze[row][col].probability_of_containing_target
-    #         sum_probabilities_next_step += maze[row][col].probability_of_containing_target_next_step
-
+    # Find indexes of maximum probability for agent 6
     if agent == 6:
         indexes_of_max_probability = np.where(probability_of_containing_target ==
                                               np.amax(probability_of_containing_target))
-        # for row in range(NUM_ROWS):
-        #     for col in range(NUM_COLS):
-        #         # maze[row][col].probability_of_containing_target /= sum_probabilities
-        #         if compare_fractions(maze[row][col].probability_of_containing_target, max_p) == 1:
-        #             max_p = maze[row][col].probability_of_containing_target
-        #             cells_with_max_p = list()
-        #             cells_with_max_p.append((row, col))
-        #         elif compare_fractions(maze[row][col].probability_of_containing_target, max_p) == 0:
-        #             cells_with_max_p.append((row, col))
 
+    # Find indexes of maximum probability for agent 7
     elif agent == 7:
         probability_of_finding_target = np.multiply(probability_of_containing_target,
                                                     ONE_PROBABILITY - false_negative_rates)
         indexes_of_max_probability = np.where(probability_of_finding_target == np.amax(probability_of_finding_target))
 
-        # for row in range(NUM_ROWS):
-        #     for col in range(NUM_COLS):
-        #         maze[row][col].probability_of_containing_target /= sum_probabilities
-        #         x = (1 - maze[row][col].false_negative_rate) * maze[row][col].probability_of_containing_target
-        #         if compare_fractions(x, max_p) == 1:
-        #             max_p = x
-        #             cells_with_max_p = list()
-        #             cells_with_max_p.append((row, col))
-        #         elif compare_fractions(x, max_p) == 0:
-        #             cells_with_max_p.append((row, col))
-
+    # Find indexes of maximum probability for agent 8
     elif agent == 8:
         probability_of_finding_target = np.multiply(probability_of_containing_target,
                                                     ONE_PROBABILITY - false_negative_rates)
         utility_function = np.divide(probability_of_finding_target, distance_array)
         indexes_of_max_probability = np.where(utility_function == np.amax(utility_function))
-        # for row in range(NUM_ROWS):
-        #     for col in range(NUM_COLS):
-        #         # if (row, col) == current_pos:
-        #         #     continue
-        #         maze[row][col].probability_of_containing_target /= sum_probabilities
-        #         x = (1 - maze[row][col].false_negative_rate) * maze[row][col].probability_of_containing_target / \
-        #             distance_array[row][col]
-        #         if compare_fractions(x, max_p) == 1:
-        #             max_p = x
-        #             cells_with_max_p = list()
-        #             cells_with_max_p.append((row, col))
-        #         elif compare_fractions(x, max_p) == 0:
-        #             cells_with_max_p.append((row, col))
 
+    # Find indexes of maximum probability for agent 9
     elif agent == 9:
         probability_of_finding_target = np.multiply(probability_of_containing_target_next_step,
                                                     ONE_PROBABILITY - false_negative_rates)
         utility_function = np.divide(probability_of_finding_target, distance_array)
         indexes_of_max_probability = np.where(utility_function == np.amax(utility_function))
-        # for row in range(NUM_ROWS):
-        #     for col in range(NUM_COLS):
-        #         # if (row, col) == current_pos:
-        #         #     continue
-        #         maze[row][col].probability_of_containing_target_next_step /= sum_probabilities_next_step
-        #         # (1 - maze[row][col].false_negative_rate) *
-        #         x = maze[row][col].probability_of_containing_target_next_step / distance_array[row][col]
-        #         if compare_fractions(x, max_p) == 1:
-        #             max_p = x
-        #             cells_with_max_p = list()
-        #             cells_with_max_p.append((row, col))
-        #         elif compare_fractions(x, max_p) == 0:
-        #             cells_with_max_p.append((row, col))
 
+    # Find indexes from maximum probability with least distance
     indexes_with_max_probability_and_min_distance = np.where(distance_array[indexes_of_max_probability] ==
                                                              np.amin(distance_array[indexes_of_max_probability]))
+
+    # Choose randomly if there's a tie
     random_num = random.randint(0, indexes_with_max_probability_and_min_distance[0].shape[0] - 1)
 
-    # print("In helper")
-    # print(indexes_of_max_probability)
-    # print(indexes_with_max_probability_and_min_distance[random_num])
-    # print(random_num)
-    # print(indexes_of_max_probability[0][indexes_with_max_probability_and_min_distance[random_num]])
-    # print(indexes_of_max_probability[1][indexes_with_max_probability_and_min_distance[random_num]])
+    # Return position of current estimated target
     return indexes_of_max_probability[0][indexes_with_max_probability_and_min_distance[0][random_num]],\
            indexes_of_max_probability[1][indexes_with_max_probability_and_min_distance[0][random_num]]
-
-    # print("cells with max p =", cells_with_max_p)
-    # for item in cells_with_max_p:
-    #     # if (distance_array[item[0]][item[1]] < least_distance) and (distance_array[item[0]][item[1]] != 0):
-    #     if distance_array[item[0]][item[1]] < least_distance:
-    #         least_distance = distance_array[item[0]][item[1]]
-    #         cells_with_least_d = list()
-    #         cells_with_least_d.append((item[0], item[1]))
-    #     elif distance_array[item[0]][item[1]] == least_distance:
-    #         cells_with_least_d.append((item[0], item[1]))
-    #
-    # if len(cells_with_least_d) > 1:
-    #     random_index = random.randint(0, len(cells_with_least_d) - 1)
-    #     # print(cells_with_least_d[random_index])
-    #     return cells_with_least_d[random_index]
-    # else:
-    #     # print(cells_with_least_d[0])
-    #     return cells_with_least_d[0]
 
 
 def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
@@ -434,7 +374,15 @@ def astar_search(maze: list, start_pos: tuple, goal_pos: tuple):
     return parents, num_explored_nodes
 
 
-def compute_probability(probability_of_containing_target, false_negative_rates, current_pos):
+def compute_probability_when_agent_fails_to_find_target(probability_of_containing_target: np.array,
+                                                        false_negative_rates: np.array, current_pos: tuple):
+    """
+    Compute probability when agent fails to find target
+    :param probability_of_containing_target: update probability directly in this array
+    :param false_negative_rates: numpy array
+    :param current_pos: agent's current position
+    :return: None
+    """
     p_of_x_y = probability_of_containing_target[current_pos[0]][current_pos[1]]
 
     reduced_probability = p_of_x_y * false_negative_rates[current_pos[0]][current_pos[1]]
@@ -443,47 +391,75 @@ def compute_probability(probability_of_containing_target, false_negative_rates, 
     probability_of_containing_target /= probability_denominator
     probability_of_containing_target[current_pos[0]][current_pos[1]] = reduced_probability/probability_denominator
 
-    # for row in range(NUM_ROWS):
-    #     for column in range(NUM_COLS):
-    #         if current_pos == (row, column):
-    #             maze[row][column].probability_of_containing_target = reduced_probability / probability_denominator
-    #         else:
-    #             maze[row][column].probability_of_containing_target = maze[row][column].probability_of_containing_target \
-    #                                                                  / probability_denominator
 
+def check_and_propagate_probability(probability_of_containing_target: np.array, false_negative_rates: np.array,
+                                    current_pos: tuple, target_pos: tuple):
+    """
+    Function is used to check and propagate probabilities
+    :param probability_of_containing_target: numpy array to store probabilities
+    :param false_negative_rates: numpy array to store false negative rates
+    :param current_pos: current position
+    :param target_pos: target position
+    :return: True if agent is able to find out target otherwise False
+    """
 
-def check_and_propagate_probability(probability_of_containing_target, false_negative_rates, current_pos, target_pos):
+    # If agent is at target's position, then use false negative rate to find target in it. If agent has found out,
+    # return True otherwise change belief accordingly
     if current_pos == target_pos:
+
+        # If current cell is flat
         if false_negative_rates[current_pos[0]][current_pos[1]] == 0.2:
             x = random.randint(0, 99)
             if x < 20:
-                compute_probability(probability_of_containing_target, false_negative_rates, current_pos)
+                compute_probability_when_agent_fails_to_find_target(probability_of_containing_target,
+                                                                    false_negative_rates, current_pos)
             else:
                 return True
+
+        # If current cell is hilly
         elif false_negative_rates[current_pos[0]][current_pos[1]] == 0.5:
             x = random.randint(0, 99)
             if x < 50:
-                compute_probability(probability_of_containing_target, false_negative_rates, current_pos)
+                compute_probability_when_agent_fails_to_find_target(probability_of_containing_target,
+                                                                    false_negative_rates, current_pos)
             else:
                 return True
+
+        # If current cell is forest
         elif false_negative_rates[current_pos[0]][current_pos[1]] == 0.8:
             x = random.randint(0, 99)
             if x < 80:
-                compute_probability(probability_of_containing_target, false_negative_rates, current_pos)
+                compute_probability_when_agent_fails_to_find_target(probability_of_containing_target,
+                                                                    false_negative_rates, current_pos)
             else:
                 return True
     else:
-        compute_probability(probability_of_containing_target, false_negative_rates, current_pos)
+        compute_probability_when_agent_fails_to_find_target(probability_of_containing_target,
+                                                            false_negative_rates, current_pos)
 
     return False
 
 
 def examine_and_propagate_probability(maze, probability_of_containing_target, false_negative_rates, current_pos,
                                       target_pos, current_estimated_goal, node):
+    """
+    Examine and change probability according to different conditions
+    :param maze: Maze object
+    :param probability_of_containing_target: numpy array of probabilities
+    :param false_negative_rates: numpy array of false negative rates
+    :param current_pos: current position
+    :param target_pos: target position
+    :param current_estimated_goal: current estimated goal
+    :param node: to change examine
+    :return:
+    """
+
+    # check and propagate probability if current position of agent is at estimated target
     if current_pos == current_estimated_goal:
         return check_and_propagate_probability(probability_of_containing_target, false_negative_rates, current_pos,
                                                target_pos)
 
+    # If maze's node is blocked, change probability accordingly
     elif maze[node[0]][node[1]].is_blocked:
         p_of_x_y = probability_of_containing_target[node[0]][node[1]]
         remaining_probability = np.sum(probability_of_containing_target) - p_of_x_y
@@ -491,19 +467,22 @@ def examine_and_propagate_probability(maze, probability_of_containing_target, fa
         probability_of_containing_target /= remaining_probability
         probability_of_containing_target[node[0]][node[1]] = ZERO_PROBABILITY
 
-        # for row in range(NUM_ROWS):
-        #     for column in range(NUM_COLS):
-        #         if node == (row, column):
-        #             maze[row][column].probability_of_containing_target = ZERO_PROBABILITY
-        #         else:
-        #             maze[row][column].probability_of_containing_target = \
-        #                 maze[row][column].probability_of_containing_target / remaining_probability
         return False
     else:
+        # Else examine node
         return check_and_propagate_probability(probability_of_containing_target, false_negative_rates, node, target_pos)
 
 
 def update_status(maze: list, false_negative_rates: np.ndarray, maze_array: np.array, cur_pos: tuple):
+    """
+    Function is used to update status of current cell of agent
+    :param maze: agent's maze object
+    :param false_negative_rates: numpy array of false negative rates
+    :param maze_array: numpy array of full maze
+    :param cur_pos: agent's current position
+    :return:
+    """
+    # Change in agent's maze according to full maze
     if maze_array[cur_pos[0]][cur_pos[1]] == 1:
         maze[cur_pos[0]][cur_pos[1]].is_blocked = True
     elif maze_array[cur_pos[0]][cur_pos[1]] == 2:

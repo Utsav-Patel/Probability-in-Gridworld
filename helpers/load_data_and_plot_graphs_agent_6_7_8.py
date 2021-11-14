@@ -1,3 +1,7 @@
+"""
+This file contains functions to plot boxplot and histogram for agent 6,7 and 8.
+"""
+# Necessary imports
 import pickle
 from helpers.agent6 import plot_boxplot, plot_histogram
 
