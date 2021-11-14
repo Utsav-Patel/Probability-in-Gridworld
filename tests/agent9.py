@@ -1,3 +1,8 @@
+"""
+This is the test file for agent 9.
+"""
+
+# Necessary imports
 from datetime import datetime
 import multiprocessing
 import numpy as np
@@ -6,47 +11,45 @@ import pickle
 from helpers.helper import generate_grid_with_probability_p, length_of_path_from_source_to_goal,\
     generate_target_position, examine_and_propagate_probability, compute_explored_cells_from_path
 from helpers.agent9 import move_target
-from constants import PROBABILITY_OF_GRID, STARTING_POSITION_OF_AGENT, INF, NUM_ROWS, NUM_COLS, NUM_ITERATIONS
+from constants import PROBABILITY_OF_GRID, STARTING_POSITION_OF_AGENT, INF, NUM_ITERATIONS
 from src.Agent9 import Agent9
 
 
 def find_moving_target(num: int):
+    """
+    This function is used to test agent 9
+    :param num: iteration number
+    :return: (movements, examinations, actions)
+    """
 
+    # Start running agent 9
     print('Running for', num)
     agent = Agent9()
     agent_num = 9
-    agent.reset()
+
+    # Keep generating grid and target position until we will get valid pairs.
     while True:
         full_maze = generate_grid_with_probability_p(PROBABILITY_OF_GRID)
         target_position = generate_target_position(full_maze)
         if length_of_path_from_source_to_goal(full_maze, STARTING_POSITION_OF_AGENT, target_position) != INF:
             break
 
-    # print('Starting agent', agent_num)
-    # now = datetime.now()
-    # dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-    # print("date and time =", dt_string)
-
-    agent.reset()
     target_found = False
 
-    # print('Original Maze')
-    # print(full_maze)
-
-    # for row in range(NUM_ROWS):
-    #     for col in range(NUM_COLS):
-    #         print(agent.maze[row][col].four_neighbors, end=" ")
-    #     print()
-
+    # Run the following while loop until we will get the target
     while not target_found:
 
-        # print('Agent current position', agent.current_position)
-        # print('Target current position', target_position)
-
+        # First, agent will sense its neighbor and update its belief and prediction for the next step
         agent.sense(target_position)
+
+        # Second, agent will find an estimated goal using the prediction probability
         agent.pre_planning(agent_num)
 
+        # Third, agent will plan a path to reach an estimated goal
         agent.planning(agent.current_estimated_goal)
+
+        # If the current estimated goal is not reachable, agent will assign the probability to zero and redo
+        # pre-planning and planning until it will get a reachable target
         while (not agent.is_target_in_neighbors) and (agent.current_estimated_goal not in agent.parents):
             agent.maze[agent.current_estimated_goal[0]][agent.current_estimated_goal[1]].is_blocked = True
             examine_and_propagate_probability(agent.maze, agent.probability_of_containing_target_next_step,
@@ -55,83 +58,50 @@ def find_moving_target(num: int):
             agent.pre_planning(agent_num)
             agent.planning(agent.current_estimated_goal)
 
+        # Then, next time step will come and target will move one step
         target_position = move_target(target_position, full_maze)
+
+        # Agent will start its execution and examination
         target_found = agent.execution(full_maze, target_position)
 
-        # if agent.current_position == target_position:
-        #     print(agent.is_target_in_neighbors)
-        #     print(target_found)
-        #     input()
-        # target_found = agent.examine(random_maze, target_pos)
-
-        p = np.sum(agent.probability_of_containing_target)
-        p_next = np.sum(agent.probability_of_containing_target_next_step)
-        # # print('Probability of containing target')
-        # for row in range(NUM_ROWS):
-        #     for col in range(NUM_COLS):
-        #         p += agent.maze[row][col].probability_of_containing_target
-        #         p_next += agent.maze[row][col].probability_of_containing_target_next_step
-        # print(format(agent.maze[row][col].probability_of_containing_target, ".5f"), end=" ")
-        # print()
-
-        # print('Probability of containing target for next moment')
-        # for row in range(NUM_ROWS):
-        #     for col in range(NUM_COLS):
-        #         print(format(agent.maze[row][col].probability_of_containing_target_next_step, ".5f"), end=" ")
-        #     print()
-
-        # print('Total probability', p)
-        # print('Total probability next', p_next)
-
-        # input()
-
-    # print('Total counts', cnt)
+    # Compute number of movements
     movements = compute_explored_cells_from_path(agent.final_paths)
-    # x.append([p, agent.num_examinations, movements])
-    # return [agent_num,p, agent.num_examinations, movements]
-
-    # print('Number of examinations', agent.num_examinations)
-    # print('Number of movements', movements)
-    #
-    # print('Total costs', agent.num_examinations + movements)
-    #
-    # print('ending agent', agent_num)
-    # now = datetime.now()
-    # dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-    # print("date and time =", dt_string)
 
     return agent.num_examinations, movements, agent.num_examinations + movements
 
 
 if __name__ == "__main__":
 
+    # Initialize empty list
     total_examinations = list()
     total_movements = list()
     total_cost = list()
 
+    # start time
     start_time = datetime.now()
 
+    # Find total number of cpu
     n_cores = int(multiprocessing.cpu_count())
-
     print('Number of cores', n_cores)
     p = multiprocessing.Pool(processes=n_cores)
 
+    # Run total NUM_ITERATIONS times
     results = p.imap_unordered(find_moving_target, range(NUM_ITERATIONS))
 
+    # Store results in final results
     for result in results:
-        # print(result)
         total_examinations.append(result[0])
         total_movements.append(result[1])
         total_cost.append(result[2])
 
+    # Dump result in pickle file
     with open('../data/agent9_data.pkl', 'wb') as f:
         pickle.dump({'total_cost': total_cost, 'total_examinations': total_examinations, 'total_movements':
             total_movements}, f)
-    # plot_boxplot([total_cost_6, total_cost_7, total_cost_8], 'boxplot for total cost', legends, 'total_cost.png')
 
+    # Print final results
     end_time = datetime.now()
     print("Average Number of movements of agent 9 = ", np.average(total_movements))
-    # print("Average total probability of agent 9 = ", np.average(total_p_6))
     print("Average Number of total examinations of agent 9= ", np.average(total_examinations))
     print("Average cost of agent 9 = ", np.average(total_cost))
     print(f"Runtime = {end_time - start_time}")
