@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 from helpers.helper import update_status
 
@@ -96,3 +97,29 @@ def forward_execution(maze: list, false_negative_rates: np.ndarray, maze_array: 
         #         current_path.append(cur_pos)
 
     return current_path, num_backtracks
+
+
+def plot_boxplot(data: list, title: str, titles_for_each_plot: list):
+    fig, ax = plt.subplots(3)
+    for ind in range(len(data)):
+        ax[ind].boxplot(data[ind], patch_artist=True, notch='True', vert=0)
+        # ax[ind].set_yticklabels(legends[ind])
+        ax[ind].set_title(titles_for_each_plot[ind])
+    fig.suptitle(title)
+    # fig.text(0.5, 0.04, 'Values', ha='center')
+    fig.tight_layout()
+    # plt.savefig('tmp.png')
+    plt.show()
+
+
+def plot_histogram(data: list, labels: list, title: str):
+    plt.style.use('seaborn-deep')
+
+    # x = np.random.normal(1, 2, 5000)
+    # y = np.random.normal(-1, 3, 2000)
+    # bins = np.linspace(-10, 10, 30)
+
+    plt.hist(data, bins=20, label=labels)
+    plt.title(title)
+    plt.legend(loc='upper right')
+    plt.show()
