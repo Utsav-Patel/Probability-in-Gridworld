@@ -10,7 +10,7 @@ The first agent we created would check the grid world for the cell that had the 
 the grid world for the cell that had the highest probability of containing the target and examined that cell. The third agent was an agent we created by tweaking the
 formula used by the first two agents. And the final agent we had to create was an agent of our own choice that outperformed all three other agents.
 
-An indepth explanation of the formulae used for all agents and the description of the terrain types etc is given in [our report here](https://github.com/Utsav-Patel/Probability_in_Gridworld/blob/main/Report.pdf)
+An indepth explanation of the formulae used for all agents and the description of the terrain types etc is given in [our report here](https://github.com/Utsav-Patel/Voyage-Into-the-Unknown/blob/main/Report.pdf)
 
 ##### Agents 6, 7 and 8 comparison when target is in flat terrain
 
@@ -59,4 +59,4 @@ Here we wanted to show the performance of our own agent, Agent nine as a table o
 As we can see Agent nine massively outperforms our other agents.
 
 
-For more in depth details, analysis and explanations please refer to [our report here](https://github.com/Utsav-Patel/Probability_in_Gridworld/blob/main/Report.pdf)
+For more in depth details, analysis and explanations please refer to [our report here](https://github.com/Utsav-Patel/Voyage-Into-the-Unknown/blob/main/Report.pdf)
