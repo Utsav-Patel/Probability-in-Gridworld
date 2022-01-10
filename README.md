@@ -53,7 +53,7 @@ Thus Agent eight performs the best overall as expected.
 Here we wanted to show the performance of our own agent, Agent nine as a table of average values -
 
 <p align="center">
-	<img src="/images/agent9.png">
+	<img src="/images/agent9.PNG">
 </p>
 
 As we can see Agent nine massively outperforms our other agents.
