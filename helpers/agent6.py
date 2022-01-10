@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from helpers.helper import update_status
+from helpers.Agent6helper import update_status
 
 
 def generate_grid_manually():
